@@ -422,7 +422,7 @@ function terminal(){
       P('에덴은 시민의 눈을 신뢰합니다.')+
       P('당신은 오늘 하루 종일, 시민의 눈을 정정하는 일을 했다.\n그 두 문장이 어떻게 같은 도시의 것인지, 잠깐 생각하려는데—')
     );
-    setTimeout(()=>noise(3000,null,morning2),2600);
+    setTimeout(()=>noise(1000,null,morning2),2600);
   };
 }
 
@@ -511,7 +511,7 @@ function breakdown(){
 
 /* ---------- 재입장 ---------- */
 function reentry(){
-  noise(3000,['재연결 시도','실패','…누구세요?'],freeWorld);
+  noise(3000,['재연결 시도','실패','?'],freeWorld);
 }
 function freeWorld(){
   screen(
