@@ -124,12 +124,13 @@ body{
 @keyframes thunk{from{transform:translateY(-50%) rotate(-12deg) scale(2.4);opacity:0}
   to{transform:translateY(-50%) rotate(-12deg) scale(1);opacity:1}}
 
-/* ---------- 노이즈 ---------- */
+/* ---------- 리셋 컷 (암전) ---------- */
 #noise{position:fixed;inset:0;z-index:60;display:none;background:#000}
-#noise canvas{width:100%;height:100%;display:block}
 #noiseTxt{position:fixed;z-index:61;inset:0;display:flex;align-items:center;justify-content:center;
   color:var(--grn);font-size:15px;letter-spacing:.15em;text-align:center;white-space:pre-line;
-  text-shadow:0 0 12px rgba(95,224,141,.5)}
+  text-shadow:0 0 12px rgba(95,224,141,.5);
+  animation:flick 1.2s steps(1) infinite}
+@keyframes flick{0%{opacity:1}92%{opacity:1}94%{opacity:.25}96%{opacity:1}98%{opacity:.6}100%{opacity:1}}
 
 /* ---------- 가짜 에러 ---------- */
 #crash{position:fixed;inset:0;z-index:80;display:none;background:#0d0f12;color:#c9ced6;
@@ -172,7 +173,7 @@ h1.title{font-size:34px;letter-spacing:.12em;color:var(--grn);margin:0 0 6px;fon
     <div id="screen"></div>
   </div>
 </div>
-<div id="noise"><canvas id="nzc"></canvas></div>
+<div id="noise"></div>
 <div id="noiseTxt" style="display:none"></div>
 <div id="crash"></div>
 
@@ -209,30 +210,25 @@ function thud(){
   }catch(e){}
 }
 
-/* ---------- 노이즈 ---------- */
-function noise(ms,lines,done){
-  const nz=$('#noise'), cv=$('#nzc'), tx=$('#noiseTxt');
-  nz.style.display='block';
-  cv.width=160; cv.height=100;
-  const ctx=cv.getContext('2d');
-  let run=true;
-  (function frame(){
-    if(!run)return;
-    const img=ctx.createImageData(160,100);
-    for(let i=0;i<img.data.length;i+=4){
-      const v=Math.random()*70;
-      img.data[i]=v*.6; img.data[i+1]=v; img.data[i+2]=v*.7; img.data[i+3]=255;
-    }
-    ctx.putImageData(img,0,0);
-    requestAnimationFrame(frame);
+/* ---------- 리셋 컷: 0.4초 신호 끊김 (찢어짐 → 암전 → 재개) ---------- */
+function glitchCut(done){
+  const st=$('#stage'), bk=$('#noise');
+  st.classList.add('breaking');
+  setTimeout(()=>{
+    st.classList.remove('breaking');
+    bk.style.display='block';
+    setTimeout(()=>{ bk.style.display='none'; done&&done(); },160);
+  },260);
+}
+/* 암전 + 터미널 텍스트 (재입장 등 무거운 전환용) */
+function blackout(lines,stepMs,done){
+  const bk=$('#noise'), tx=$('#noiseTxt');
+  bk.style.display='block'; tx.style.display='flex';
+  let i=0;
+  (function step(){
+    if(i<lines.length){ tx.textContent=lines[i++]; setTimeout(step,stepMs); }
+    else{ bk.style.display='none'; tx.style.display='none'; tx.textContent=''; done&&done(); }
   })();
-  if(lines&&lines.length){
-    tx.style.display='flex';
-    let i=0;
-    const step=()=>{ if(i<lines.length){ tx.textContent=lines[i++]; setTimeout(step,Math.floor(ms/lines.length)); } };
-    step();
-  }
-  setTimeout(()=>{ run=false; nz.style.display='none'; tx.style.display='none'; tx.textContent=''; done&&done(); },ms);
 }
 
 /* ================================================================
@@ -431,7 +427,7 @@ function terminal(){
       P('에덴은 시민의 눈을 신뢰합니다.')+
       P('당신은 오늘 하루 종일, 시민의 눈을 정정하는 일을 했다.\n그 두 문장이 어떻게 같은 도시의 것인지, 잠깐 생각하려는데—')
     );
-    setTimeout(()=>noise(1000,null,morning2),2600);
+    setTimeout(()=>glitchCut(morning2),2600);
   };
 }
 
@@ -520,7 +516,7 @@ function breakdown(){
 
 /* ---------- 재입장 ---------- */
 function reentry(){
-  noise(3000,['재연결 시도','실패','?'],freeWorld);
+  blackout(['재연결 시도','실패','?'],1000,freeWorld);
 }
 function freeWorld(){
   screen(
