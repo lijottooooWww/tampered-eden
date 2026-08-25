@@ -228,12 +228,13 @@ const FRAGS=[
 '그 애들은 있었다.',
 '설명하지 마. 본 것만 말해.',
 '썩는 건 진짜거든.',
-'구시가지. 사과 1개. 목격자 1명.',
-'성공 판정 41건',
-'허용 오차 1% — 40년간 0회',
-'Revolution Success Probability Limit : 1%',
-'15:00 비. 오차 없음.',
-'낙광 라테, 한 잔.'
+'빛의 비',
+'사과 한 알',
+'15:00 비',
+'편차 +2초',
+'낙광 라테, 한 잔.',
+'바닐라 빈 향',
+'…아는 분 같아서.'
 ];
 function runsDone(){ try{return +localStorage.getItem('te_runs')||0;}catch(e){return 0;} }
 function flashFrag(ms,done){
@@ -287,7 +288,7 @@ function title(){
     BTN('근무를 시작한다','st'),
     '<span class="l"><b>TAMPERED EDEN</b></span><span class="r">텍스트 프로토타입</span>'
   );
-  $('#st').onclick=()=>{thud();morning1();};
+  $('#st').onclick=morning1;
 }
 
 /* ---------- 아침 ---------- */
@@ -418,10 +419,21 @@ function walkHome(){
 
 function doubt(){
   G.doubted=(G.doubted||0)+1;
+  if(G.doubted>=2){
+    // 부정을 거듭해도 시스템은 이미 접수했다
+    screen(
+      P('한 명이다. 계속 한 명이다.\n그런데 왜 자꾸, 어귀를 다시 보게 되지?')+
+      P('…신고를 해야 하나?','q')+
+      BOX('이상 현상을 목격하셨습니다.\n가까운 신고 단말에서 신고할 수 있습니다. (도보 2분)','','시스템 안내')+
+      BTN('신고 단말로 간다','go')+
+      BTN('집에 간다','home','dim')
+    );
+    $('#go').onclick=terminal;
+    $('#home').onclick=homeNight;
+    return;
+  }
   screen(
-    P(G.doubted===1
-      ? '사람은 여전히 한 명이다.\n아니, 처음부터 한 명이었을지도 모른다.'
-      : '한 명이다. 계속 한 명이다.\n그런데 왜 자꾸, 어귀를 다시 보게 되지?')+
+    P('사람은 여전히 한 명이다.\n아니, 처음부터 한 명이었을지도 모른다.')+
     P('…신고를 해야 하나?','q')+
     BTN('방금, 봤다.','a')+
     BTN('잘 못 봤나?','b','dim')
@@ -474,7 +486,6 @@ function terminal(){
     BTN('접수한다','n')
   );
   $('#n').onclick=()=>{
-    thud();
     screen(
       BOX('이상 현상 신고 접수\n접수 번호: C-1041\n처리 예정: 익일\n\n신고해 주셔서 감사합니다. 에덴은 시민의 눈을 신뢰합니다.','','접수 완료')+
       P('에덴은 시민의 눈을 신뢰합니다.')+
@@ -536,7 +547,7 @@ function crashSeq(){
     P('단말 앞에 선다.\n화면이 켜져 있다. 당신이 오기 전부터.')+
     BTN('신고한다','n')
   );
-  $('#n').onclick=()=>{thud();corrupt(0);};
+  $('#n').onclick=()=>{corrupt(0);};
 }
 const CORRUPT=[
 '이상 현상 신고 접수\n접수 번호: C-1041\n처리 예정: 익일\n신고해 주셔서 감사합니다. 에덴은 시민의 눈을 신뢰합니',
