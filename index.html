@@ -130,6 +130,8 @@ body{
   color:var(--grn);font-size:15px;letter-spacing:.15em;text-align:center;white-space:pre-line;
   text-shadow:0 0 12px rgba(95,224,141,.5);
   animation:flick 1.2s steps(1) infinite}
+#noiseTxt.frag{animation:none;color:rgba(95,224,141,.8);font-size:14px;letter-spacing:.22em;
+  text-shadow:1px 0 rgba(244,117,106,.4),-1px 0 rgba(95,224,141,.4)}
 @keyframes flick{0%{opacity:1}92%{opacity:1}94%{opacity:.25}96%{opacity:1}98%{opacity:.6}100%{opacity:1}}
 
 /* ---------- 가짜 에러 ---------- */
@@ -180,7 +182,7 @@ h1.title{font-size:34px;letter-spacing:.12em;color:var(--grn);margin:0 0 6px;fon
 <script>
 'use strict';
 const $=s=>document.querySelector(s);
-const G={day:1, loc:'', looked:false, asked:false, recorded:false, avoided:false};
+const G={day:1, loc:'', looked:false, asked:false, recorded:false, avoided:false, doubted:0};
 
 /* ---------- 렌더 헬퍼 ---------- */
 let seq=0;
@@ -203,11 +205,45 @@ let AC=null;
 function thud(){
   try{
     AC=AC||new (window.AudioContext||window.webkitAudioContext)();
-    const t=AC.currentTime, o=AC.createOscillator(), g=AC.createGain();
-    o.type='sine'; o.frequency.setValueAtTime(120,t); o.frequency.exponentialRampToValueAtTime(45,t+.12);
-    g.gain.setValueAtTime(.5,t); g.gain.exponentialRampToValueAtTime(.001,t+.2);
-    o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t+.22);
+    if(AC.state==='suspended')AC.resume();
+    const t=AC.currentTime;
+    // 타격 클릭 — 도장이 서류를 때리는 스냅
+    const len=Math.floor(AC.sampleRate*.06), buf=AC.createBuffer(1,len,AC.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);
+    const s=AC.createBufferSource(), f=AC.createBiquadFilter(), g2=AC.createGain();
+    f.type='bandpass'; f.frequency.value=1600; f.Q.value=.7;
+    g2.gain.setValueAtTime(.9,t); g2.gain.exponentialRampToValueAtTime(.001,t+.08);
+    s.buffer=buf; s.connect(f); f.connect(g2); g2.connect(AC.destination); s.start(t);
+    // 저음 몸통 — 책상 울림
+    const o=AC.createOscillator(), g=AC.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(50,t+.15);
+    g.gain.setValueAtTime(.9,t); g.gain.exponentialRampToValueAtTime(.001,t+.3);
+    o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t+.32);
   }catch(e){}
+}
+
+/* ---------- 소설 단서 파편 (2회차+, 리셋 암전 사이 0.2초 미만 플래시) ---------- */
+const FRAGS=[
+'기록해 두지.',
+'그 애들은 있었다.',
+'설명하지 마. 본 것만 말해.',
+'썩는 건 진짜거든.',
+'구시가지. 사과 1개. 목격자 1명.',
+'성공 판정 41건',
+'허용 오차 1% — 40년간 0회',
+'Revolution Success Probability Limit : 1%',
+'15:00 비. 오차 없음.',
+'낙광 라테, 한 잔.'
+];
+function runsDone(){ try{return +localStorage.getItem('te_runs')||0;}catch(e){return 0;} }
+function flashFrag(ms,done){
+  const bk=$('#noise'), tx=$('#noiseTxt');
+  bk.style.display='block';
+  tx.textContent=FRAGS[Math.floor(Math.random()*FRAGS.length)];
+  tx.classList.add('frag'); tx.style.display='flex';
+  setTimeout(()=>{ tx.style.display='none'; tx.classList.remove('frag'); tx.textContent='';
+    setTimeout(()=>{ bk.style.display='none'; done&&done(); },70);
+  },ms);
 }
 
 /* ---------- 리셋 컷: 0.4초 신호 끊김 (찢어짐 → 암전 → 재개) ---------- */
@@ -216,6 +252,7 @@ function glitchCut(done){
   st.classList.add('breaking');
   setTimeout(()=>{
     st.classList.remove('breaking');
+    if(runsDone()>0 && Math.random()<0.7){ flashFrag(180,done); return; }
     bk.style.display='block';
     setTimeout(()=>{ bk.style.display='none'; done&&done(); },160);
   },260);
@@ -372,9 +409,25 @@ function walkHome(){
     P('앞서 걷던 남자가 골목 어귀를 돌아 나간다.\n회색 외투. 오른손을 주머니에 넣으며. 보폭 일정.')+
     P('당신이 어귀에 닿기 전에 —')+
     P('같은 남자가, 같은 어귀에서, 다시 걸어 나온다.\n회색 외투. 오른손을 주머니에 넣으며. 보폭 일정.\n<b style="color:var(--grn)">같은 사람이 같은 곳에서 두 번 시작되었다.</b>')+
-    BTN('방금, 봤다.','n')
+    BTN('방금, 봤다.','a')+
+    BTN('잘 못 봤나?','b','dim')
   );
-  $('#n').onclick=saw;
+  $('#a').onclick=saw;
+  $('#b').onclick=doubt;
+}
+
+function doubt(){
+  G.doubted=(G.doubted||0)+1;
+  screen(
+    P(G.doubted===1
+      ? '사람은 여전히 한 명이다.\n아니, 처음부터 한 명이었을지도 모른다.'
+      : '한 명이다. 계속 한 명이다.\n그런데 왜 자꾸, 어귀를 다시 보게 되지?')+
+    P('…신고를 해야 하나?','q')+
+    BTN('방금, 봤다.','a')+
+    BTN('잘 못 봤나?','b','dim')
+  );
+  $('#a').onclick=saw;
+  $('#b').onclick=doubt;
 }
 
 function saw(){
@@ -458,6 +511,8 @@ function endScreen(){
   if(G.asked)marks.push('벤치에 대해 조금 더 물어봤다');
   if(G.recorded)marks.push('민원 ③을 기록해 뒀다');
   if(G.avoided)marks.push('한 번은 집으로 도망쳤다');
+  if(G.doubted)marks.push('잘 못 봤다고 생각하려 했다 ('+G.doubted+'번)');
+  try{localStorage.setItem('te_runs',String(runsDone()+1));}catch(e){}
   screen(
     '<div class="title-eyebrow" '+dl()+'>RUN #45764 — SEGMENT END</div>'+
     P('프로토타입 v0.1 — 1회차(가짜 튜토리얼)부터 첫 리셋까지.','q')+
@@ -468,7 +523,7 @@ function endScreen(){
     BTN('[개발용 미리보기] 신고 ⑤ 임계 — 크래시 시퀀스','crashBtn','dim'),
     '<span class="l"><b>TAMPERED EDEN</b></span><span class="r">프로토타입</span>'
   );
-  $('#re').onclick=()=>{Object.assign(G,{looked:false,asked:false,recorded:false,avoided:false});coldOpen();};
+  $('#re').onclick=()=>{Object.assign(G,{looked:false,asked:false,recorded:false,avoided:false,doubted:0});coldOpen();};
   $('#crashBtn').onclick=crashSeq;
 }
 
@@ -516,7 +571,10 @@ function breakdown(){
 
 /* ---------- 재입장 ---------- */
 function reentry(){
-  blackout(['재연결 시도','실패','?'],1000,freeWorld);
+  blackout(['재연결 시도','실패','?'],1000,()=>{
+    if(runsDone()>0) flashFrag(220,freeWorld);
+    else freeWorld();
+  });
 }
 function freeWorld(){
   screen(
