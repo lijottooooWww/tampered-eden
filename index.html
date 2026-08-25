@@ -103,6 +103,15 @@ body{
 .btn.stamp:hover{background:rgba(244,117,106,.08)}
 .btn.ghost{border:none;color:var(--dim);text-align:center;font-size:13px}
 
+/* 책상 위 도장 (비인터랙티브 전시용) */
+.stampview{
+  display:inline-block; margin:4px 0 10px 12px;
+  border:3px solid var(--red); border-radius:4px; color:var(--red);
+  padding:5px 18px; font-weight:800; letter-spacing:.3em; font-size:19px;
+  transform:rotate(-6deg); opacity:0; animation:up .5s ease forwards;
+  pointer-events:none; user-select:none;
+}
+
 /* 도장 찍힘 */
 .stamped{position:relative}
 .stamped::after{
@@ -270,7 +279,7 @@ function office(){
   G.loc='시민민원국 정정과';
   screen(
     P('시민민원국 별관 2층, 정정과.\n당신의 자리엔 서류함과 도장 하나가 있다. 도장에는 이렇게 새겨져 있다.')+
-    BOX('착오 확인','', '','')+
+    '<div class="stampview" '+dl()+'>착오 확인</div>'+
     P('계장이 지나가며 말한다. 인수인계라기보다는 혼잣말에 가깝게.')+
     P('"우리 과 일은 간단해. 시민이 잘못 본 걸, 잘못 봤다고 확인해 드리는 거야.\n사람 눈이라는 게 원래 부실하거든. 그걸 공식적으로 정리해 주면 다들 안심하고 돌아가."','say')+
     P('안심시켜 드리는 일. 나쁘지 않은 정의다.\n오늘 할당량: 민원 3건.')+
