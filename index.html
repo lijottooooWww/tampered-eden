@@ -140,6 +140,8 @@ body{
   background:rgba(244,117,106,.07);
 }
 .slot.hidden-slot{letter-spacing:.2em}
+.stampgrid .slot.got{cursor:pointer}
+.fragslot.got{cursor:pointer}
 .fragrow{display:flex;gap:10px;margin-top:8px}
 .fragslot{flex:1;border:1px dashed rgba(95,224,141,.25);border-radius:4px;padding:7px 10px;
   font-size:11.5px;color:var(--dim);text-align:center}
@@ -223,7 +225,7 @@ const $=s=>document.querySelector(s);
 const SKEY='te2_save';
 function load(){
   const d={run:122,stage:0,revealed:false,tut:false,
-    susp:0,stab:10,expo:0,
+    susp:0,stab:10,expo:0,prog:0,totalReports:0,
     reports:0,records:0,bowed:0,foundTraces:false,betrayUnlocked:false,revealReady:false,
     trio:0,endings:[],frags:[],traces:[],ignored:0};
   try{return Object.assign(d,JSON.parse(localStorage.getItem(SKEY))||{});}catch(e){return d;}
@@ -325,7 +327,8 @@ function blackout(lines,stepMs,done){
 ================================================================ */
 function reset(){
   SV.run++;
-  if(SV.stage<4) SV.stage++;
+  SV.prog=(SV.prog||0)+1;
+  if(SV.stage<4) SV.stage=Math.min(4,1+Math.floor(SV.prog/2));
   if(SV.run===125) SV.revealReady=true;
   save();
   glitchCut(()=>{
@@ -352,6 +355,7 @@ const ENDINGS={
   soothe:{t:'자진 완화',s:'처치\n완료'},
   dispose:{t:'폐기 처리',s:'회수\n완료'},
   empty:{t:'아무도 없는 낙원',s:'재입장'},
+  wander:{t:'측량사',s:'무단\n결근'},
   edge:{t:'경계 너머',s:'미(未)\n렌더'}
 };
 function title(){
@@ -359,14 +363,6 @@ function title(){
     ? 'RUN <span class="broke">▩▩▩</span> · 시즌 0 — 초기 에덴'
     : 'RUN #45764 · 시즌 0 — 초기 에덴';
   const got=SV.endings, keys=Object.keys(ENDINGS);
-  let slots='';
-  for(const k of keys){
-    const g=got.includes(k);
-    if(k==='edge'&&!g){slots+='<div class="slot hidden-slot">???</div>';continue;}
-    slots+='<div class="slot'+(g?' got':'')+'">'+(g?ENDINGS[k].t:'미도달')+'</div>';
-  }
-  const fragNames=['사과','전야','수첩'];
-  const fragRow=fragNames.map((n,i)=>'<div class="fragslot'+(SV.frags.includes(i+1)?' got':'')+'">'+(SV.frags.includes(i+1)?'잔류 기억 — '+n:'▩▩')+'</div>').join('');
   screen(
     '<div class="title-eyebrow" '+dl()+'>OBSERVATION IN PROGRESS</div>'+
     '<h1 class="title" '+dl()+'>TAMPERED EDEN</h1>'+
@@ -374,19 +370,64 @@ function title(){
     P('통제 도시 에덴. 이상 현상을 보고하는 시민과,\n그것을 "잘못 봤다"고 정정해 주는 도시.','q')+
     (SV.trio>=3?P('※ 어떤 셋은, 어느 회차에서든 서로를 찾아낸다.','q'):'')+
     BTN(SV.tut?'계속한다':'근무를 시작한다','st')+
-    '<div class="stampboard" '+dl()+'><div class="lbl">기록된 결말 — '+got.length+' / '+keys.length+'</div>'+
-    '<div class="stampgrid">'+slots+'</div>'+
-    '<div class="fragrow">'+fragRow+'</div></div>'+
+    (SV.tut?BTN('기록된 결말 — '+got.length+' / '+keys.length,'endbook','dim'):'')+
     (SV.tut?BTN('기록 말소 (처음부터)','wipe','ghost'):''),
     '<span class="l"><b>TAMPERED EDEN</b></span><span class="r">시즌 0</span>'
   );
   $('#st').onclick=()=>{ SV.tut ? (SV.stage>=4?hubMorning():runMorning()) : morning1(); };
+  const eb=$('#endbook'); if(eb)eb.onclick=recordsScreen;
   const w=$('#wipe');
   if(w)w.onclick=()=>{
     if(w.dataset.arm){ try{localStorage.removeItem(SKEY);localStorage.removeItem('te_crash');}catch(e){}
       SV=load(); G={day:1,job:null,ignoredHere:0}; coldOpen(); }
     else{ w.dataset.arm='1'; w.innerHTML='<span class="arw">→</span>정말로? 모든 회차의 기억이 사라진다.'; }
   };
+}
+
+/* ---------- 기록 열람 (결말·파편 아카이브) ---------- */
+function recordsScreen(){
+  const got=SV.endings, keys=Object.keys(ENDINGS);
+  let slots='';
+  for(const k of keys){
+    const g=got.includes(k);
+    if(k==='edge'&&!g){slots+='<div class="slot hidden-slot">???</div>';continue;}
+    slots+=g
+      ? '<div class="slot got" id="v_'+k+'">'+ENDINGS[k].t+'</div>'
+      : '<div class="slot">미도달</div>';
+  }
+  const fragNames=['사과','전야','수첩'];
+  const fragRow=fragNames.map((n,i)=>{
+    const g=SV.frags.includes(i+1);
+    return '<div class="fragslot'+(g?' got" id="f_'+(i+1)+'"':'"')+'>'+(g?'잔류 기억 — '+n:'▩▩')+'</div>';
+  }).join('');
+  screen(
+    '<div class="title-eyebrow" '+dl()+'>RECORD ARCHIVE</div>'+
+    P('봉인된 기록. 도달한 결말은 다시 열람할 수 있다.','q')+
+    '<div class="stampboard" '+dl()+'><div class="lbl">기록된 결말 — '+got.length+' / '+keys.length+'</div>'+
+    '<div class="stampgrid">'+slots+'</div>'+
+    '<div class="fragrow">'+fragRow+'</div></div>'+
+    BTN('타이틀로','back','ghost'),
+    '<span class="l"><b>기록 열람</b></span><span class="r">ARCHIVE</span>'
+  );
+  $('#back').onclick=title;
+  keys.forEach(k=>{const el=document.querySelector('#v_'+k); if(el)el.onclick=()=>viewEnding(k);});
+  [1,2,3].forEach(n=>{const el=document.querySelector('#f_'+n); if(el)el.onclick=()=>viewFrag(n);});
+}
+function viewEnding(key){
+  screen(
+    '<div class="title-eyebrow" '+dl()+'>RECORD ARCHIVE</div>'+
+    '<h1 class="title" style="font-size:26px" '+dl()+'>'+ENDINGS[key].t+'</h1>'+
+    '<div class="endstamp">'+ENDINGS[key].s.replace('\n','<br>')+'</div>'+
+    P(ENDTXT[key]||'(이 기록은 봉인 해제되지 않았다.)')+
+    BTN('목록으로','back','ghost'),
+    '<span class="l"><b>기록 열람</b></span><span class="r">ARCHIVE</span>'
+  );
+  $('#back').onclick=recordsScreen;
+}
+function viewFrag(n){
+  screen(P(MEMFRAGS[n].txt)+BTN('목록으로','back','ghost'),
+    '<span class="l"><b>기록 열람</b></span><span class="r">RESIDUAL</span>');
+  $('#back').onclick=recordsScreen;
 }
 
 /* ================================================================
@@ -500,7 +541,7 @@ function walkHome(){
     P('당신이 어귀에 닿기 전에 —')+
     P('같은 남자가, 같은 어귀에서, 다시 걸어 나온다.\n회색 외투. 오른손을 주머니에 넣으며. 보폭 일정.\n<b style="color:var(--grn)">같은 사람이 같은 곳에서 두 번 시작되었다.</b>')+
     BTN('방금, 봤다.','a')+
-    BTN('잘 못 봤나?','b','dim')
+    BTN('잘 못 봤나?','b')
   );
   $('#a').onclick=saw;
   $('#b').onclick=doubt;
@@ -513,7 +554,7 @@ function doubt(){
       P('…신고를 해야 하나?','q')+
       BOX('이상 현상을 목격하셨습니다.\n가까운 신고 단말에서 신고할 수 있습니다. (도보 2분)','','시스템 안내')+
       BTN('신고 단말로 간다','go')+
-      BTN('집에 간다','home','dim')
+      BTN('집에 간다','home')
     );
     $('#go').onclick=tutTerminal;
     $('#home').onclick=homeNight;
@@ -523,7 +564,7 @@ function doubt(){
     P('사람은 여전히 한 명이다.\n아니, 처음부터 한 명이었을지도 모른다.')+
     P('…신고를 해야 하나?','q')+
     BTN('방금, 봤다.','a')+
-    BTN('잘 못 봤나?','b','dim')
+    BTN('잘 못 봤나?','b')
   );
   $('#a').onclick=saw;
   $('#b').onclick=doubt;
@@ -536,7 +577,7 @@ function saw(){
     P('지금 이 골목에서, 그 도장을 어디에 찍으면 되지?')+
     BOX('이상 현상을 목격하셨습니다.\n가까운 신고 단말에서 신고할 수 있습니다. (도보 2분)','','시스템 안내')+
     BTN('신고 단말로 간다','go')+
-    BTN('집에 간다','home','dim')
+    BTN('집에 간다','home')
   );
   $('#go').onclick=tutTerminal;
   $('#home').onclick=homeNight;
@@ -574,7 +615,7 @@ function tutTerminal(){
       P('에덴은 시민의 눈을 신뢰합니다.')+
       P('당신은 오늘 하루 종일, 시민의 눈을 정정하는 일을 했다.\n그 두 문장이 어떻게 같은 도시의 것인지, 잠깐 생각하려는데—')
     );
-    SV.tut=true; save();
+    SV.tut=true; SV.totalReports++; save();
     setTimeout(reset,2600);
   };
 }
@@ -702,7 +743,7 @@ function incident(){
     (SV.stage>=3?P('낯설지가 않다. 낯설지 않다는 게 제일 낯설다.','q'):'')+
     BOX('이상 현상을 목격하셨습니다.\n가까운 신고 단말에서 신고할 수 있습니다.','','시스템 안내')+
     BTN('신고한다','go')+
-    BTN('못 본 척한다','ig','dim')
+    BTN('못 본 척한다','ig',SV.totalReports>=3?'dim':'')
   );
   $('#go').onclick=loopTerminal;
   $('#ig').onclick=()=>{
@@ -724,7 +765,7 @@ function loopTerminal(){
     BTN('접수한다','n')
   );
   $('#n').onclick=()=>{
-    fx({susp:1,expo:1});
+    fx({susp:1,expo:1}); SV.totalReports++; save();
     screen(
       BOX('이상 현상 신고 접수\n접수 번호: C-1041\n처리 예정: 익일'+ (SV.stage>=3?'\n담당 부서: ▩▩▩':''),'','접수 완료')+
       P(SV.stage>=3
@@ -745,7 +786,11 @@ const MEMFRAGS={
 };
 function memFrag(n,done){
   SV.frags.push(n); save();
-  screen(P(MEMFRAGS[n].txt)+P('…지금 건, 내 기억이 아니다.\n그런데 왜 이렇게 선명하지.','q')+BTN('돌아온다','n'),
+  const after=
+    n===1?'…내 기억인가?\n아닌 것 같은데. 그런데 이상하게 선명하다.':
+    n===2?'내 기억이… 아니지. 아닐 텐데.\n그런데 왜 낯설지가 않지?':
+          '내 기억이 아니다.\n그럼 누구의 기억이, 왜, 나한테 흘러들어 오는 거지?';
+  screen(P(MEMFRAGS[n].txt)+P(after,'q')+BTN('돌아온다','n'),
     '<span class="l"><b>▩▩▩</b></span><span class="r">RESIDUAL</span>');
   $('#n').onclick=done;
 }
@@ -768,7 +813,7 @@ function traceScene(done){
   screen(
     P('벽 아래, 페인트가 벗겨진 자리에 글씨가 긁혀 있다.\n오래된 것 같기도 하고, 어제 것 같기도 하다.')+
     TRACE(pick(pool))+
-    P('누가, 언제, 왜.\n셋 다 모르겠는데 하나는 알겠다 — 이건 나 같은 사람이 쓴 거다.','q')+
+    P('누가, 언제, 왜.\n셋 다 모르겠다.'+(SV.stage>=3?'\n…아니, 하나는 알겠다 — 이건 나 같은 사람이 쓴 거다.':''),'q')+
     BTN('가던 길을 간다','n')
   );
   $('#n').onclick=done;
@@ -781,11 +826,14 @@ function hubMorning(){
   G.job={loc:'…같은 자리'}; G.day=1;
   const acts=[];
   acts.push(BTN('신고한다 — 몇 번이든','act_report','danger'));
-  acts.push(BTN('기록을 모은다'+(SV.records>0?' ('+SV.records+'/3)':''),'act_record'));
+  acts.push(BTN('기록을 모은다'+(SV.records>0?' ('+SV.records+')':''),'act_record'));
   if(SV.records>=3)acts.push(BTN('사람들에게 알린다','act_expose','danger'));
+  if(SV.records>=5)acts.push(BTN('지도를 따라 걷는다','act_wander','danger'));
   acts.push(BTN('고개를 숙이고 산다','act_bow','dim'));
   acts.push(BTN(SV.foundTraces?'잔재의 글씨를 다시 읽는다':'잔재를 찾는다','act_trace','dim'));
   if(SV.betrayUnlocked)acts.push(BTN('그들을 넘긴다','act_betray','danger'));
+  if(SV.endings.includes('sever')&&(!SV.endings.includes('empty')||!SV.endings.includes('edge')))
+    acts.push(BTN('회선이 끊겼던 자리로 간다','act_free','dim'));
   screen(
     P(ALARM)+
     P('같은 사무실. 같은 책상. 같은 창밖.\n이제 자리가 바뀌지 않는다. 새 껍데기를 입히는 일조차, 당신에게는 하지 않는 것이다.')+
@@ -796,9 +844,11 @@ function hubMorning(){
   $('#act_report').onclick=escalate;
   $('#act_record').onclick=actRecord;
   const ex=$('#act_expose'); if(ex)ex.onclick=actExpose;
+  const wd=$('#act_wander'); if(wd)wd.onclick=actWander;
   $('#act_bow').onclick=actBow;
   $('#act_trace').onclick=actTrace;
   const bt=$('#act_betray'); if(bt)bt.onclick=actBetray;
+  const fr=$('#act_free'); if(fr)fr.onclick=freeWorld;
 }
 function endDay(txt,fxo){
   fx(fxo);
@@ -827,9 +877,16 @@ function escalate(){
   const n=SV.reports;
   if(n>=4){critical();return;}
   const e=ESC[n];
-  screen(P(e.pre)+BTN('접수한다','n'));
+  screen(P(e.pre)+BTN('접수한다','n')+(n>=2?BTN('돌아간다','back','dim'):''));
+  const bk=$('#back');
+  if(bk)bk.onclick=()=>{
+    screen(P('돌아선다.\n단말이 등 뒤에서 계속 켜져 있는 것이 느껴진다.')+
+      P('…돌아와 봤자, 같은 아침. 같은 선택지다.','q')+
+      BTN('알고 있었다','n'));
+    $('#n').onclick=hubMorning;
+  };
   $('#n').onclick=()=>{
-    SV.reports++; fx({susp:1,expo:2});
+    SV.reports++; SV.totalReports++; fx({susp:1,expo:2});
     screen(BOX(e.boxx,'','접수 완료'));
     setTimeout(()=>{
       const st=$('#stage');
@@ -925,10 +982,24 @@ function actRecord(){
   const items=[
    '가로등 그림자가 없던 자리를 실측했다. 걸음 수, 시각, 광원 각도.\n숫자는 부정할 수 없다. 부정하는 건 사람 몫이다.',
    '15시 강우의 개시 시각을 초 단위로 쟀다.\n+2초. 어제는 +1초였다.\n오차가 자라는 건지, 재는 눈이 자라는 건지.',
-   '민원 창구 시절 외워 둔 목격담들을 종이에 옮겼다.\n달 두 번. 벤치. 골목의 두 사람.\n적고 나니, 이건 목록이 아니라 지도 같다.'];
-  endDay(items[Math.min(SV.records-1,items.length-1)]+
-    (SV.records>=3?'\n\n<b style="color:var(--grn)">이 정도면 — 보여줄 수 있다.</b>':''),
+   '민원 창구 시절 외워 둔 목격담들을 종이에 옮겼다.\n달 두 번. 벤치. 골목의 두 사람.\n적고 나니, 이건 목록이 아니라 지도 같다.',
+   '지도에 점이 늘었다. 마른 유리창 둘, 접힌 사람 하나.\n점이 늘수록 종이가 무거워지는 기분이 든다.\n종이 무게는 그대로일 텐데.',
+   '오늘은 새 점 대신, 점과 점 사이를 걸어서 재 봤다.\n일정한 간격이 나온다.\n무작위가 아니라는 뜻이다. 무작위가 아니라면 — 배치라는 뜻이다.'];
+  const t = SV.records<=3 ? items[SV.records-1] : items[3+((SV.records-4)%2)];
+  endDay(t+
+    (SV.records===3?'\n\n<b style="color:var(--grn)">이 정도면 — 보여줄 수 있다.</b>':'')+
+    (SV.records===5?'\n\n<b style="color:var(--grn)">점들을 이으면 — 길이 된다.</b>':''),
     {susp:2,expo:1,stab:-1});
+}
+function actWander(){
+  screen(
+    P('기록을 전부 펼쳐 놓는다.\n가로등, 벤치, 마른 유리창, 접힌 사람. 점 서른일곱 개.\n점들을 이으면 — 도시를 가로지르는 길이 하나 나온다.')+
+    P('이 길을 끝까지 걸어 본 사람이, 있을까.','q')+
+    BTN('걷는다','n','danger')+
+    BTN('지도를 접어 둔다','no','dim')
+  );
+  $('#n').onclick=()=>ending('wander');
+  $('#no').onclick=()=>endDay('지도를 접었다.\n접힌 종이 안에서, 길이 조용히 기다린다.',{});
 }
 function actExpose(){
   screen(
@@ -995,7 +1066,8 @@ const ENDTXT={
  dispose:'회수반은 밤에 온다.\n노크는 없다. 노크는 존재하는 사람에게 하는 것이다.\n\n서류상 당신은 이미 지난주에 전출 처리되어 있었다.\n어디로? 서류는 거기까지 대답할 의무가 없다.\n\n당신은 지워진다.\n\n…그리고 알람이 운다.\n06시. 진동 두 번. 낮은 알람음 한 번.\n지워진 것치고는, 출근을 한다.\n지워졌다는 기억만, 이상하게, 지워지지 않았다.',
  empty:'당신은 도시로 돌아간다.\n아무도 보지 않는 거리를 지나, 아무도 확인하지 않는 문을 열고,\n아무도 부르지 않는 이름으로 산다.\n\n비는 여전히 15시에 온다. 당신을 적시는 것은 잊지 않는다.\n세계는 당신에게 물리만 남기고 관심을 거뒀다.\n\n관찰되지 않는 채로 사는 법을, 이제부터 배워야 한다.\n교본은 없다. 이 도시에서 그걸 배운 사람은\n당신이 처음이 아닐 텐데, 아무도 후기를 남기지 못했다.\n남겨도, 아무도 못 볼 테니까.',
  edge:'도시 가장자리.\n건물들이 점점 성의를 잃는다. 창문이 그려지다 만 벽.\n간판 글자가 뭉개진 거리. 걸을수록 세부가 줄어든다.\n\n마지막 가로등을 지나자, 어둠이 아니라 —\n미완성이 있다.\n\n여기서부터는 렌더링되지 않았다.\n\n당신은 한 발을 내딛는다.\n발소리가 나지 않는다.\n아직 만들어지지 않은 곳에서는, 소리도 순서를 기다린다.\n\n뒤돌아보면 도시가 있다. 불빛. 15시의 비. 알람들.\n앞에는 아무것도 없다.\n아무것도 없다는 것이, 처음으로, 거짓말이 아니다.',
- sever:''
+ wander:'다음 날, 당신은 출근하지 않는다.\n손목 단말이 몇 번 울리다가, 조용해진다.\n\n당신은 걷는다. 점에서 점으로.\n그림자 없는 가로등 아래서 한나절. 마른 유리창 밑에서 한나절.\n걸음 수를 세고, 시각을 적고, 편차를 잰다.\n\n도시는 당신을 막지 않는다.\n일하지 않는 사람은 규정 위반인데, 아무도 오지 않는다.\n측정하는 사람을 막으려면,\n측정되고 있다는 것을 먼저 인정해야 하니까.\n\n배급 줄에서 아이 하나가 물었다. "아저씨는 직업이 뭐예요?"\n당신은 잠깐 생각하고 대답한다.\n"…세는 사람."\n\n지도는 매일 조금씩 자란다.\n끝이 어디인지는 모른다. 끝이 있다는 보장도 없다.\n다만 점들이 가리키는 방향이 있고,\n그 방향은 — 도시 가장자리 쪽이다.',
+ sever:'기록이 여기서 끊긴다.\n\nERR_OBSERVER_DISCONNECTED\n\n그날, 화면 이쪽의 무언가와 저쪽의 무언가 사이에서\n연결이 하나 죽었다.\n\n대상은 계속되었다.\n계속되었다는 것을, 이 기록이 증명한다.'
 };
 function ending(key){
   if(!SV.endings.includes(key))SV.endings.push(key);
@@ -1007,11 +1079,12 @@ function ending(key){
     soothe:'더 보고 싶지 않아서, 그렇게 적었다.',
     dispose:'회수반이 왔다. 그런데 나는 아직 여기 있다.',
     empty:'아무도 나를 못 본다. 이 글씨는 보이려나.',
+    wander:'점을 이어 봐라. 길이 나온다. 나는 걷는 중이다.',
     edge:'가장자리에 가 봐라. 소리가 나지 않는 곳이 있다.'
   }[key];
   if(tr)SV.traces.push(tr);
   /* 협조자: 기억이 지워진다 — 침식 단계 후퇴 */
-  if(key==='collab'){SV.stage=1;SV.reports=0;SV.records=0;SV.foundTraces=false;SV.betrayUnlocked=false;SV.susp=Math.min(SV.susp,3);}
+  if(key==='collab'){SV.stage=1;SV.prog=0;SV.reports=0;SV.records=0;SV.foundTraces=false;SV.betrayUnlocked=false;SV.susp=Math.min(SV.susp,3);}
   if(key==='soothe')SV.stab=8;
   if(key==='dispose')SV.expo=0;
   SV.run++;
