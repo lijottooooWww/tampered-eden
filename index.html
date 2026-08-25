@@ -29,14 +29,10 @@ body{
   padding:34px 30px 40px; min-height:70vh;
   box-shadow:0 0 30px rgba(95,224,141,.05), inset 0 0 60px rgba(95,224,141,.03);
 }
-#stage::before{ /* 이중 테두리 */
-  content:""; position:absolute; inset:7px; border:1px solid rgba(95,224,141,.14);
-  border-radius:4px; pointer-events:none;
-}
-#stage::after{ /* 스캔라인 */
-  content:""; position:absolute; inset:0; pointer-events:none; border-radius:6px;
-  background:repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px);
-}
+#stage::before{content:""; position:absolute; inset:7px; border:1px solid rgba(95,224,141,.14);
+  border-radius:4px; pointer-events:none;}
+#stage::after{content:""; position:absolute; inset:0; pointer-events:none; border-radius:6px;
+  background:repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px);}
 .deco{position:absolute; pointer-events:none; z-index:2}
 .deco.slash{width:64px;height:8px;
   background:repeating-linear-gradient(-60deg, var(--grn-line) 0 5px, transparent 5px 11px);
@@ -54,26 +50,22 @@ body{
 
 /* ---------- HUD ---------- */
 #hud{
-  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;
   border-bottom:1px solid rgba(95,224,141,.16); padding-bottom:12px; margin-bottom:26px;
   font-size:12.5px; color:var(--dim); letter-spacing:.12em;
 }
 #hud .l b{color:var(--grn);font-weight:600}
 #hud .r{opacity:.7}
-#hud .slot{border-bottom:1px dashed rgba(95,224,141,.25);cursor:help;position:relative}
-#hud .slot .tip{display:none;position:absolute;top:130%;right:0;white-space:nowrap;
-  background:var(--panel);border:1px solid var(--grn-line);padding:4px 10px;border-radius:3px;
-  color:var(--ink);letter-spacing:.02em;z-index:5}
-#hud .slot:hover .tip, #hud .slot:active .tip{display:block}
+#hud .stat{width:100%;font-size:11.5px;letter-spacing:.14em;color:var(--dim);margin-top:2px}
+#hud .stat b{color:var(--grn);font-weight:600}
 
 /* ---------- 본문 ---------- */
 .ln{margin:0 0 14px; opacity:0; animation:up .5s ease forwards; white-space:pre-line}
-.ln.q{color:var(--dim); font-style:normal}
+.ln.q{color:var(--dim)}
 .ln.say{color:var(--grn); padding-left:14px; border-left:2px solid var(--grn-line)}
 @keyframes up{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.ln{animation:none;opacity:1}}
 
-/* 시스템 박스 (서식/안내) */
 .sysbox{
   border:1px solid var(--grn-line); border-radius:4px; background:rgba(95,224,141,.04);
   padding:16px 20px; margin:18px 0; color:var(--grn); white-space:pre-line;
@@ -81,9 +73,17 @@ body{
 }
 .sysbox .hd{font-size:11px;letter-spacing:.22em;color:var(--dim);margin-bottom:8px}
 .sysbox.warn{border-color:var(--red-line);color:var(--red);background:rgba(244,117,106,.05)}
-.sysbox.corrupt{animation:jit .12s steps(2) infinite}
+.sysbox.corrupt{animation:jit .12s steps(2) infinite;
+  text-shadow:1px 0 rgba(244,117,106,.7), -1px 0 rgba(95,224,141,.7)}
 @keyframes jit{0%{transform:translate(0,0)}50%{transform:translate(1px,-1px)}100%{transform:translate(-1px,1px)}}
-.sysbox.corrupt{text-shadow:1px 0 rgba(244,117,106,.7), -1px 0 rgba(95,224,141,.7)}
+
+/* 흔적 (다른 개체의 낙서) */
+.trace{
+  border-left:2px solid var(--red-line); padding:8px 14px; margin:16px 0;
+  color:var(--red); opacity:0; animation:up .5s ease forwards; white-space:pre-line;
+  font-size:14px; letter-spacing:.05em;
+}
+.trace .hd{font-size:11px;letter-spacing:.2em;color:var(--dim);margin-bottom:4px}
 
 /* ---------- 버튼 ---------- */
 .btn{
@@ -97,13 +97,15 @@ body{
 .btn:focus-visible{outline:1px solid var(--grn);outline-offset:2px}
 .btn .arw{opacity:.6;margin-right:8px}
 .btn.dim{color:var(--dim);border-color:rgba(95,224,141,.18)}
+.btn.danger{color:var(--red);border-color:var(--red-line)}
+.btn.danger:hover{background:rgba(244,117,106,.08)}
 .btn.stamp{
   text-align:center;color:var(--red);border-color:var(--red-line);
   font-weight:700;letter-spacing:.3em;padding:14px}
 .btn.stamp:hover{background:rgba(244,117,106,.08)}
 .btn.ghost{border:none;color:var(--dim);text-align:center;font-size:13px}
 
-/* 책상 위 도장 (비인터랙티브 전시용) */
+/* 책상 위 도장 (비인터랙티브) */
 .stampview{
   display:inline-block; margin:4px 0 10px 12px;
   border:3px solid var(--red); border-radius:4px; color:var(--red);
@@ -111,12 +113,11 @@ body{
   transform:rotate(-6deg); opacity:0; animation:up .5s ease forwards;
   pointer-events:none; user-select:none;
 }
-
 /* 도장 찍힘 */
 .stamped{position:relative}
 .stamped::after{
   content:"착오 확인"; position:absolute; right:18px; top:50%;
-  transform:translateY(-50%) rotate(-12deg) ;
+  transform:translateY(-50%) rotate(-12deg);
   border:3px solid var(--red); color:var(--red); border-radius:4px;
   padding:4px 12px; font-weight:800; letter-spacing:.25em; font-size:18px;
   animation:thunk .25s cubic-bezier(.2,1.8,.4,1) both;
@@ -124,15 +125,48 @@ body{
 @keyframes thunk{from{transform:translateY(-50%) rotate(-12deg) scale(2.4);opacity:0}
   to{transform:translateY(-50%) rotate(-12deg) scale(1);opacity:1}}
 
+/* 엔딩 도장판 */
+.stampboard{margin-top:26px}
+.stampboard .lbl{font-size:11.5px;letter-spacing:.18em;color:var(--dim);margin-bottom:10px}
+.stampgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.slot{
+  aspect-ratio:1; border:1.5px dashed rgba(95,224,141,.25); border-radius:50%;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:11px;color:var(--dim);padding:6px;
+}
+.slot.got{
+  border:2.5px solid var(--red); color:var(--red);
+  font-weight:800; transform:rotate(-7deg); font-size:12px; line-height:1.3;
+  background:rgba(244,117,106,.07);
+}
+.slot.hidden-slot{letter-spacing:.2em}
+.fragrow{display:flex;gap:10px;margin-top:8px}
+.fragslot{flex:1;border:1px dashed rgba(95,224,141,.25);border-radius:4px;padding:7px 10px;
+  font-size:11.5px;color:var(--dim);text-align:center}
+.fragslot.got{border-style:solid;border-color:var(--grn-line);color:var(--grn)}
+
+/* 엔딩 대형 스탬프 */
+.endstamp{
+  position:absolute; top:40px; right:26px; width:110px; height:110px; border-radius:50%;
+  border:3.5px solid var(--red); color:var(--red);
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  font-weight:800;font-size:16px;line-height:1.3;transform:rotate(-10deg);
+  background:rgba(244,117,106,.06); pointer-events:none;
+  animation:thunk2 .3s cubic-bezier(.2,1.6,.4,1) both;
+}
+@keyframes thunk2{from{transform:rotate(-10deg) scale(2);opacity:0}to{transform:rotate(-10deg) scale(1);opacity:1}}
+
 /* ---------- 리셋 컷 (암전) ---------- */
 #noise{position:fixed;inset:0;z-index:60;display:none;background:#000}
 #noiseTxt{position:fixed;z-index:61;inset:0;display:flex;align-items:center;justify-content:center;
   color:var(--grn);font-size:15px;letter-spacing:.15em;text-align:center;white-space:pre-line;
   text-shadow:0 0 12px rgba(95,224,141,.5);
   animation:flick 1.2s steps(1) infinite}
+@keyframes flick{0%{opacity:1}92%{opacity:1}94%{opacity:.25}96%{opacity:1}98%{opacity:.6}100%{opacity:1}}
 #noiseTxt.frag{animation:none;color:rgba(95,224,141,.8);font-size:14px;letter-spacing:.22em;
   text-shadow:1px 0 rgba(244,117,106,.4),-1px 0 rgba(95,224,141,.4)}
-@keyframes flick{0%{opacity:1}92%{opacity:1}94%{opacity:.25}96%{opacity:1}98%{opacity:.6}100%{opacity:1}}
+#noiseTxt.big{animation:none;color:var(--red);font-size:26px;letter-spacing:.35em;font-weight:700;
+  text-shadow:2px 0 rgba(95,224,141,.5),-2px 0 rgba(244,117,106,.5)}
 
 /* ---------- 가짜 에러 ---------- */
 #crash{position:fixed;inset:0;z-index:80;display:none;background:#0d0f12;color:#c9ced6;
@@ -140,8 +174,7 @@ body{
 #crash .box{max-width:520px;margin:26vh auto 0;padding:0 24px}
 #crash h1{font-size:21px;font-weight:600;margin:0 0 14px;letter-spacing:0}
 #crash .code{font-family:"SF Mono",ui-monospace,Menlo,monospace;color:#8a919c;font-size:14px;margin-bottom:30px}
-#crash button{
-  background:#2e5fb8;color:#fff;border:none;border-radius:4px;padding:9px 22px;
+#crash button{background:#2e5fb8;color:#fff;border:none;border-radius:4px;padding:9px 22px;
   font:inherit;font-size:14px;cursor:pointer}
 #crash .foot{position:fixed;bottom:18px;left:0;right:0;text-align:center;
   color:#3a3f47;font-size:11.5px;letter-spacing:.04em}
@@ -159,8 +192,9 @@ body{
   opacity:0;animation:up .5s ease forwards}
 h1.title{font-size:34px;letter-spacing:.12em;color:var(--grn);margin:0 0 6px;font-weight:700;
   text-shadow:0 0 18px rgba(95,224,141,.35);opacity:0;animation:up .5s ease forwards}
-.title-sub{color:var(--dim);font-size:13px;letter-spacing:.2em;margin-bottom:34px;
+.title-sub{color:var(--dim);font-size:13px;letter-spacing:.2em;margin-bottom:30px;
   opacity:0;animation:up .5s ease forwards}
+.title-sub .broke{color:var(--red);text-shadow:1px 0 rgba(95,224,141,.5)}
 .hr{border:none;border-top:1px solid rgba(95,224,141,.14);margin:24px 0}
 </style>
 </head>
@@ -182,13 +216,32 @@ h1.title{font-size:34px;letter-spacing:.12em;color:var(--grn);margin:0 0 6px;fon
 <script>
 'use strict';
 const $=s=>document.querySelector(s);
-const G={day:1, loc:'', looked:false, asked:false, recorded:false, avoided:false, doubted:0};
 
-/* ---------- 렌더 헬퍼 ---------- */
+/* ================================================================
+   저장 — 캠페인은 리셋을 건너 이어진다
+================================================================ */
+const SKEY='te2_save';
+function load(){
+  const d={run:122,stage:0,revealed:false,tut:false,
+    susp:0,stab:10,expo:0,
+    reports:0,records:0,bowed:0,foundTraces:false,betrayUnlocked:false,revealReady:false,
+    trio:0,endings:[],frags:[],traces:[],ignored:0};
+  try{return Object.assign(d,JSON.parse(localStorage.getItem(SKEY))||{});}catch(e){return d;}
+}
+function save(){try{localStorage.setItem(SKEY,JSON.stringify(SV));}catch(e){}}
+let SV=load();
+
+/* 회차 내 상태 (리셋마다 초기화) */
+let G={day:1,job:null,ignoredHere:0};
+
+/* ================================================================
+   렌더 헬퍼
+================================================================ */
 let seq=0;
 function dl(){return 'style="animation-delay:'+(seq++*140)+'ms"';}
 function P(t,cls){return '<p class="ln '+(cls||'')+'" '+dl()+'>'+t+'</p>';}
 function BOX(t,cls,hd,id){return '<div class="sysbox '+(cls||'')+'" '+dl()+(id?' id="'+id+'"':'')+'>'+(hd?'<div class="hd">'+hd+'</div>':'')+t+'</div>';}
+function TRACE(t){return '<div class="trace" '+dl()+'><div class="hd">긁힌 글씨</div>'+t+'</div>';}
 function BTN(t,id,cls){return '<button class="btn '+(cls||'')+'" id="'+id+'" '+dl()+'><span class="arw">→</span>'+t+'</button>';}
 function screen(html,hudTxt){
   seq=0;
@@ -197,24 +250,24 @@ function screen(html,hudTxt){
   window.scrollTo(0,0);
 }
 function hudDefault(){
-  return '<span class="l"><b>근무 '+G.day+'일차</b> · '+G.loc+'</span><span class="r">EXPERIMENT #45764</span>';
+  let h='<span class="l"><b>근무 '+G.day+'일차</b> · '+(G.job?G.job.loc:'에덴')+'</span><span class="r">EXPERIMENT #45764</span>';
+  if(SV.stage>=2) h+='<span class="stat">의심 <b>'+SV.susp+'</b> · 안정 <b>'+SV.stab+'</b></span>';
+  return h;
 }
 
-/* ---------- 사운드 (도장) ---------- */
+/* ---------- 사운드 (도장 전용) ---------- */
 let AC=null;
 function thud(){
   try{
     AC=AC||new (window.AudioContext||window.webkitAudioContext)();
     if(AC.state==='suspended')AC.resume();
     const t=AC.currentTime;
-    // 타격 클릭 — 도장이 서류를 때리는 스냅
     const len=Math.floor(AC.sampleRate*.06), buf=AC.createBuffer(1,len,AC.sampleRate), d=buf.getChannelData(0);
     for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);
     const s=AC.createBufferSource(), f=AC.createBiquadFilter(), g2=AC.createGain();
     f.type='bandpass'; f.frequency.value=1600; f.Q.value=.7;
     g2.gain.setValueAtTime(.9,t); g2.gain.exponentialRampToValueAtTime(.001,t+.08);
     s.buffer=buf; s.connect(f); f.connect(g2); g2.connect(AC.destination); s.start(t);
-    // 저음 몸통 — 책상 울림
     const o=AC.createOscillator(), g=AC.createGain();
     o.type='sine'; o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(50,t+.15);
     g.gain.setValueAtTime(.9,t); g.gain.exponentialRampToValueAtTime(.001,t+.3);
@@ -222,43 +275,41 @@ function thud(){
   }catch(e){}
 }
 
-/* ---------- 소설 단서 파편 (2회차+, 리셋 암전 사이 0.2초 미만 플래시) ---------- */
+/* ================================================================
+   소설 단서 파편 — 작은 것만. 큰 단서 금지.
+================================================================ */
 const FRAGS=[
-'기록해 두지.',
-'그 애들은 있었다.',
-'설명하지 마. 본 것만 말해.',
-'썩는 건 진짜거든.',
-'빛의 비',
-'사과 한 알',
-'15:00 비',
-'편차 +2초',
-'낙광 라테, 한 잔.',
-'바닐라 빈 향',
-'…아는 분 같아서.'
+'기록해 두지.','그 애들은 있었다.','설명하지 마. 본 것만 말해.','썩는 건 진짜거든.',
+'빛의 비','사과 한 알','15:00','편차 +2초','낙광 라테, 한 잔.','바닐라 빈','배수구',
+'…아는 분 같아서.','배수구로 들어갔겠지.','얘야, 물건이 그냥 없어지는 법은 없단다.',
+'지루하시겠습니다.','모레 자정입니다.','식사요, 대장.','팔 거야, 살 거야?',
+'전부 승인이래요.','깨끗해도 너무 깨끗해.','일요일 밤이다.'
 ];
-function runsDone(){ try{return +localStorage.getItem('te_runs')||0;}catch(e){return 0;} }
-function flashFrag(ms,done){
+function flashText(txt,cls,ms,done){
   const bk=$('#noise'), tx=$('#noiseTxt');
   bk.style.display='block';
-  tx.textContent=FRAGS[Math.floor(Math.random()*FRAGS.length)];
-  tx.classList.add('frag'); tx.style.display='flex';
-  setTimeout(()=>{ tx.style.display='none'; tx.classList.remove('frag'); tx.textContent='';
+  tx.textContent=txt; tx.classList.add(cls); tx.style.display='flex';
+  setTimeout(()=>{ tx.style.display='none'; tx.classList.remove(cls); tx.textContent='';
     setTimeout(()=>{ bk.style.display='none'; done&&done(); },70);
   },ms);
 }
 
-/* ---------- 리셋 컷: 0.4초 신호 끊김 (찢어짐 → 암전 → 재개) ---------- */
+/* ---------- 리셋 컷 ---------- */
 function glitchCut(done){
   const st=$('#stage'), bk=$('#noise');
   st.classList.add('breaking');
   setTimeout(()=>{
     st.classList.remove('breaking');
-    if(runsDone()>0 && Math.random()<0.7){ flashFrag(180,done); return; }
+    if(SV.revealReady){ SV.revealReady=false; SV.revealed=true; save();
+      flashText('회차 125','big',300,done); return; }
+    if(SV.stage>=3 && Math.random()<0.4){
+      flashText('개체 유지율 상승. 원인 불명.','frag',220,done); return; }
+    if(SV.stage>=1 && Math.random()<0.7){
+      flashText(FRAGS[Math.floor(Math.random()*FRAGS.length)],'frag',180,done); return; }
     bk.style.display='block';
     setTimeout(()=>{ bk.style.display='none'; done&&done(); },160);
   },260);
 }
-/* 암전 + 터미널 텍스트 (재입장 등 무거운 전환용) */
 function blackout(lines,stepMs,done){
   const bk=$('#noise'), tx=$('#noiseTxt');
   bk.style.display='block'; tx.style.display='flex';
@@ -270,7 +321,22 @@ function blackout(lines,stepMs,done){
 }
 
 /* ================================================================
-   장면
+   리셋 — 회차가 넘어간다. 캠페인은 이어진다.
+================================================================ */
+function reset(){
+  SV.run++;
+  if(SV.stage<4) SV.stage++;
+  if(SV.run===125) SV.revealReady=true;
+  save();
+  glitchCut(()=>{
+    G={day:1,job:null,ignoredHere:0};
+    if(SV.stage>=4) hubMorning();
+    else runMorning();
+  });
+}
+
+/* ================================================================
+   콜드 오픈 / 타이틀
 ================================================================ */
 function coldOpen(){
   screen('','');
@@ -278,39 +344,72 @@ function coldOpen(){
     'EXPERIMENT #45764\nSUBJECT POOL : ACTIVE\nRUN : 001</div>';
   setTimeout(title,900);
 }
-
+const ENDINGS={
+  wall:{t:'벽지',s:'승진\n예정'},
+  expose:{t:'게시판의 아침',s:'전단\n살포'},
+  collab:{t:'협조자',s:'망각\n처리'},
+  sever:{t:'절단',s:'관찰\n중단'},
+  soothe:{t:'자진 완화',s:'처치\n완료'},
+  dispose:{t:'폐기 처리',s:'회수\n완료'},
+  empty:{t:'아무도 없는 낙원',s:'재입장'},
+  edge:{t:'경계 너머',s:'미(未)\n렌더'}
+};
 function title(){
+  const runTxt = SV.revealed
+    ? 'RUN <span class="broke">▩▩▩</span> · 시즌 0 — 초기 에덴'
+    : 'RUN #45764 · 시즌 0 — 초기 에덴';
+  const got=SV.endings, keys=Object.keys(ENDINGS);
+  let slots='';
+  for(const k of keys){
+    const g=got.includes(k);
+    if(k==='edge'&&!g){slots+='<div class="slot hidden-slot">???</div>';continue;}
+    slots+='<div class="slot'+(g?' got':'')+'">'+(g?ENDINGS[k].t:'미도달')+'</div>';
+  }
+  const fragNames=['사과','전야','수첩'];
+  const fragRow=fragNames.map((n,i)=>'<div class="fragslot'+(SV.frags.includes(i+1)?' got':'')+'">'+(SV.frags.includes(i+1)?'잔류 기억 — '+n:'▩▩')+'</div>').join('');
   screen(
     '<div class="title-eyebrow" '+dl()+'>OBSERVATION IN PROGRESS</div>'+
     '<h1 class="title" '+dl()+'>TAMPERED EDEN</h1>'+
-    '<div class="title-sub" '+dl()+'>RUN #45764 · 프로토타입 v0.1</div>'+
+    '<div class="title-sub" '+dl()+'>'+runTxt+'</div>'+
     P('통제 도시 에덴. 이상 현상을 보고하는 시민과,\n그것을 "잘못 봤다"고 정정해 주는 도시.','q')+
-    BTN('근무를 시작한다','st'),
-    '<span class="l"><b>TAMPERED EDEN</b></span><span class="r">텍스트 프로토타입</span>'
+    (SV.trio>=3?P('※ 어떤 셋은, 어느 회차에서든 서로를 찾아낸다.','q'):'')+
+    BTN(SV.tut?'계속한다':'근무를 시작한다','st')+
+    '<div class="stampboard" '+dl()+'><div class="lbl">기록된 결말 — '+got.length+' / '+keys.length+'</div>'+
+    '<div class="stampgrid">'+slots+'</div>'+
+    '<div class="fragrow">'+fragRow+'</div></div>'+
+    (SV.tut?BTN('기록 말소 (처음부터)','wipe','ghost'):''),
+    '<span class="l"><b>TAMPERED EDEN</b></span><span class="r">시즌 0</span>'
   );
-  $('#st').onclick=morning1;
+  $('#st').onclick=()=>{ SV.tut ? (SV.stage>=4?hubMorning():runMorning()) : morning1(); };
+  const w=$('#wipe');
+  if(w)w.onclick=()=>{
+    if(w.dataset.arm){ try{localStorage.removeItem(SKEY);localStorage.removeItem('te_crash');}catch(e){}
+      SV=load(); G={day:1,job:null,ignoredHere:0}; coldOpen(); }
+    else{ w.dataset.arm='1'; w.innerHTML='<span class="arw">→</span>정말로? 모든 회차의 기억이 사라진다.'; }
+  };
 }
 
-/* ---------- 아침 ---------- */
+/* ================================================================
+   1회차 — 가짜 튜토리얼
+================================================================ */
 const ALARM='손목 단말이 06시를 알린다. 진동 두 번, 낮은 알람음 한 번.\n화면에 뜬다 — <b style="color:var(--grn)">통금 해제. 에덴 표준시 06:00.</b>';
+let T={looked:false,asked:false,recorded:false,doubted:0};
 
 function morning1(){
-  G.day=1; G.loc='자택 · 제3주거구';
+  G.day=1; G.job={loc:'자택 · 제3주거구'};
   screen(
     P(ALARM)+
     P('창밖에서 셔터 올라가는 소리가 순서대로 들린다. 골목 끝에서부터, 매일 같은 순서로.\n당신은 그 순서를 외우고 있지 않다. 외울 이유가 없다. 어차피 내일도 같을 테니까.')+
     P('배급 빵을 꺼낸다. 어제 받은 것. 표면에 배급 번호가 찍혀 있다.\n빵에 번호가 찍혀 나오는 도시라니 — 라고 생각해 본 적은 없다.\n빵은 원래 그렇게 생긴 것이다.')+
     BTN('창밖을 잠시 내다본다','a')+BTN('바로 나갈 준비를 한다','b')
   );
-  $('#a').onclick=()=>{G.looked=true;
+  $('#a').onclick=()=>{T.looked=true; SV.susp++; save();
     screen(P('골목은 어제와 같다.\n같다는 걸 확인하고 나니, 이상하게 안심이 된다.\n…뭘 확인한 거지?')+BTN('출근한다','n'));
     $('#n').onclick=office;};
   $('#b').onclick=office;
 }
-
-/* ---------- 정정과 ---------- */
 function office(){
-  G.loc='시민민원국 정정과';
+  G.job={loc:'시민민원국 정정과'};
   screen(
     P('시민민원국 별관 2층, 정정과.\n당신의 자리엔 서류함과 도장 하나가 있다. 도장에는 이렇게 새겨져 있다.')+
     '<div class="stampview" '+dl()+'>착오 확인</div>'+
@@ -321,10 +420,7 @@ function office(){
   );
   $('#n').onclick=m1;
 }
-
-function docBox(txt){
-  return BOX(txt,'','민원 서식 제7호','doc');
-}
+function docBox(txt){return BOX(txt,'','민원 서식 제7호','doc');}
 function stampFlow(afterFn){
   const b=$('#stampBtn');
   b.onclick=()=>{
@@ -334,24 +430,21 @@ function stampFlow(afterFn){
     setTimeout(afterFn,900);
   };
 }
-
 function m1(){
   screen(
     P('민원 ① — 노파','q')+
     docBox('"달이 두 번 떴어. 어제 밤에.\n하나가 지고 나서, 같은 자리에 하나가 또 떴다고."')+
-    P('노파는 확신에 차 있다. 확신에 찬 사람의 서류가 제일 처리하기 쉽다.\n서식 하단, 정정 사유 예시가 인쇄되어 있다: <i style="color:var(--dim)">착시 / 피로 / 광학 현상 / 고령.</i>')+
+    P('노파는 확신에 차 있다. 확신에 찬 사람의 서류가 제일 처리하기 쉽다.\n서식 하단, 정정 사유 예시 목록이 인쇄되어 있다: <i style="color:var(--dim)">착시 / 피로 / 광학 현상 / 고령.</i>')+
     '<button class="btn stamp" id="stampBtn" '+dl()+'>착오 확인</button>'
   );
   stampFlow(()=>{
-    screen(
-      P('쾅.')+
+    screen(P('쾅.')+
       P('노파는 서류를 받아 들고, 정말로 조금 안심한 얼굴이 되어 돌아간다.\n"그렇지. 내가 잘못 봤겠지. 고마워요."')+
       P('당신은 방금 한 사람의 밤하늘을 정정했다.')+
       BTN('다음 민원인','n'));
     $('#n').onclick=m2;
   });
 }
-
 function m2(){
   screen(
     P('민원 ② — 중년 남자','q')+
@@ -361,7 +454,7 @@ function m2(){
     BTN('조금 더 물어본다','ask','dim')
   );
   $('#ask').onclick=()=>{
-    G.asked=true;
+    T.asked=true; SV.susp++; save();
     screen(
       P('"…자국까지 그대로인 게, 더 이상하지 않아요? 새로 놓은 거면?"','say')+
       P('당신은 답하지 않는다. 답이 없어서.')+
@@ -375,7 +468,6 @@ function m2after(){
   screen(P('쾅.')+P('남자는 서류를 접어 넣고 목례한다. 벤치 얘기는 이제 공식적으로 끝났다.\n비공식적으로 어디에 남는지는, 서식이 관여할 바 아니다.')+BTN('다음 민원인','n'));
   $('#n').onclick=m3;
 }
-
 function m3(){
   screen(
     P('민원 ③ — 젊은 여자','q')+
@@ -388,23 +480,20 @@ function m3(){
     BTN('기록해 둔다','rec','dim')
   );
   $('#rec').onclick=()=>{
-    G.recorded=true;
+    T.recorded=true; SV.susp++; save();
     $('#rec').textContent='(퇴근 전, 메모지에 옮겨 적기로 한다)';
     $('#rec').disabled=true;
   };
   stampFlow(()=>{
-    screen(
-      P('쾅.')+
+    screen(P('쾅.')+
       P('여자는 안심하지 않았다. 다만 허가받은 얼굴이 되었다.\n잊어도 된다는 허가.')+
-      P('당신은 오늘 할당량을 채웠다.'+(G.recorded?'\n그리고 메모지 한 장을, 소매 안쪽에 접어 넣었다.':''))+
+      P('당신은 오늘 할당량을 채웠다.'+(T.recorded?'\n그리고 메모지 한 장을, 소매 안쪽에 접어 넣었다.':''))+
       BTN('퇴근한다','n'));
     $('#n').onclick=walkHome;
   });
 }
-
-/* ---------- 퇴근길 ---------- */
 function walkHome(){
-  G.loc='제3주거구 방면 · 지름길 골목';
+  G.job={loc:'제3주거구 방면 · 지름길 골목'};
   screen(
     P('18시 40분. 통금까지 한 시간 이십 분.\n지름길 골목으로 접어든다. 매일 다니는 길. 외울 이유도 없이 외워진 길.')+
     P('앞서 걷던 남자가 골목 어귀를 돌아 나간다.\n회색 외투. 오른손을 주머니에 넣으며. 보폭 일정.')+
@@ -416,11 +505,9 @@ function walkHome(){
   $('#a').onclick=saw;
   $('#b').onclick=doubt;
 }
-
 function doubt(){
-  G.doubted=(G.doubted||0)+1;
-  if(G.doubted>=2){
-    // 부정을 거듭해도 시스템은 이미 접수했다
+  T.doubted++;
+  if(T.doubted>=2){
     screen(
       P('한 명이다. 계속 한 명이다.\n그런데 왜 자꾸, 어귀를 다시 보게 되지?')+
       P('…신고를 해야 하나?','q')+
@@ -428,7 +515,7 @@ function doubt(){
       BTN('신고 단말로 간다','go')+
       BTN('집에 간다','home','dim')
     );
-    $('#go').onclick=terminal;
+    $('#go').onclick=tutTerminal;
     $('#home').onclick=homeNight;
     return;
   }
@@ -441,7 +528,6 @@ function doubt(){
   $('#a').onclick=saw;
   $('#b').onclick=doubt;
 }
-
 function saw(){
   screen(
     P('봤다.')+
@@ -452,12 +538,11 @@ function saw(){
     BTN('신고 단말로 간다','go')+
     BTN('집에 간다','home','dim')
   );
-  $('#go').onclick=terminal;
+  $('#go').onclick=tutTerminal;
   $('#home').onclick=homeNight;
 }
-
 function homeNight(){
-  G.avoided=true; G.loc='자택 · 제3주거구';
+  G.job={loc:'자택 · 제3주거구'};
   screen(
     P('불을 끄고 눕는다.\n골목이 감긴 눈 안쪽에서 계속 시작된다. 같은 외투. 같은 보폭. 두 번.')+
     P('잠은 늦게 온다.')+
@@ -472,13 +557,11 @@ function homeNight(){
       BOX('이상 현상을 목격하셨습니다.\n가까운 신고 단말에서 신고할 수 있습니다. (도보 2분)','','시스템 안내')+
       BTN('신고 단말로 간다','go')
     );
-    $('#go').onclick=terminal;
+    $('#go').onclick=tutTerminal;
   };
 }
-
-/* ---------- 신고 단말 ---------- */
-function terminal(){
-  G.loc='신고 단말 · 가로등 7-C';
+function tutTerminal(){
+  G.job={loc:'신고 단말 · 가로등 7-C'};
   screen(
     P('단말은 가로등 아래 있다. 공중전화 부스를 닮았고, 부스보다 밝다.')+
     P('화면을 켠다. 서식이 뜬다. 낮에 수십 번 본 서식의 반대면.\n접수하는 쪽 화면은 처음 본다.')+
@@ -491,63 +574,298 @@ function terminal(){
       P('에덴은 시민의 눈을 신뢰합니다.')+
       P('당신은 오늘 하루 종일, 시민의 눈을 정정하는 일을 했다.\n그 두 문장이 어떻게 같은 도시의 것인지, 잠깐 생각하려는데—')
     );
-    setTimeout(()=>glitchCut(morning2),2600);
+    SV.tut=true; save();
+    setTimeout(reset,2600);
   };
-}
-
-/* ---------- (체감) 2회차 ---------- */
-function morning2(){
-  G.day=1; G.loc='제7정수장 계기판실';
-  screen(
-    P(ALARM)+
-    P('제7정수장 계기판실. 바늘 스물네 개가 일제히 미세하게 떨고 있다.\n당신 자리 책상에는 어제 자 인계 일지가 펼쳐져 있다. 당신의 필적으로.')+
-    BTN('…? 내가 왜 여기 있더라?','n')
-  );
-  $('#n').onclick=()=>{
-    screen(
-      P('정수장. 그래, 정수장이지. 3년 차던가.\n바늘 스물네 개. 외울 이유도 없이 외워진 숫자.')+
-      P('…그런데 방금, 아주 잠깐,\n도장 소리 같은 게 들린 것 같았다.\n쾅, 하는.')+
-      P('여기엔 도장이 없다. 계기판실에 도장이 있을 리가.')+
-      P('당신은 일지를 끌어당긴다. 일과가 시작된다.')+
-      BTN('(프로토타입은 여기까지)','n','ghost')
-    );
-    $('#n').onclick=endScreen;
-  };
-}
-
-/* ---------- 종료 화면 ---------- */
-function endScreen(){
-  const marks=[];
-  if(G.looked)marks.push('아침에 창밖을 확인했다');
-  if(G.asked)marks.push('벤치에 대해 조금 더 물어봤다');
-  if(G.recorded)marks.push('민원 ③을 기록해 뒀다');
-  if(G.avoided)marks.push('한 번은 집으로 도망쳤다');
-  if(G.doubted)marks.push('잘 못 봤다고 생각하려 했다 ('+G.doubted+'번)');
-  try{localStorage.setItem('te_runs',String(runsDone()+1));}catch(e){}
-  screen(
-    '<div class="title-eyebrow" '+dl()+'>RUN #45764 — SEGMENT END</div>'+
-    P('프로토타입 v0.1 — 1회차(가짜 튜토리얼)부터 첫 리셋까지.','q')+
-    (marks.length?BOX(marks.map(m=>'· '+m).join('\n'),'','이번 플레이의 선택'):'')+
-    P('이후 흐름: 일상 루프 → 사건 재발 → 신고/못 본 척 → 회차 반전(125) → 각성 → 임계.','q')+
-    '<div class="hr" '+dl()+'></div>'+
-    BTN('처음부터 다시','re')+
-    BTN('[개발용 미리보기] 신고 ⑤ 임계 — 크래시 시퀀스','crashBtn','dim'),
-    '<span class="l"><b>TAMPERED EDEN</b></span><span class="r">프로토타입</span>'
-  );
-  $('#re').onclick=()=>{Object.assign(G,{looked:false,asked:false,recorded:false,avoided:false,doubted:0});coldOpen();};
-  $('#crashBtn').onclick=crashSeq;
 }
 
 /* ================================================================
-   크래시 시퀀스 (개발용 미리보기)
+   직업 / 사건 데이터 — 본편 루프
 ================================================================ */
-function crashSeq(){
-  G.day=1; G.loc='신고 단말 · 가로등 7-C';
+const JOBS=[
+ {id:'ration',loc:'배급소 3번 창구',
+  intro:'배급소 3번 창구. 손이 먼저 저울을 조작한다.\n손은 이 일을 안 지 오래된 것처럼 군다.',
+  beats:[
+   {t:'줄 맨 앞의 노인이 봉투를 들어 보인다.\n"어제보다 가벼운데." 저울은 규정 눈금에 정확히 서 있다.',
+    ch:[{l:'말없이 다시 달아 준다',fx:{stab:1},rx:'같은 눈금. 노인은 고개를 끄덕이고 물러난다.\n다시 달아 준 행위가 무게를 바꾸지는 않는다. 그래도 뭔가는 바뀐 모양이다.'},
+        {l:'"규정 중량입니다"',fx:{},rx:'노인은 더 말하지 않는다.\n규정이라는 말은 어디서나 대화를 끝내는 기능이 있다.'}]},
+   {t:'옆 창구 동료가 하품을 씹으며 말한다.\n"박이 또 결근이래. 삼 일째. 사유서도 없이."',
+    ch:[{l:'"무슨 일 있대?"',fx:{susp:1},rx:'"몰라. 관리과에 물었더니 그런 직원 없다는 식으로 굴던데."\n동료는 웃었다. 농담으로 만들면 안전해지니까.',},
+        {l:'흘려듣는다',fx:{},rx:'박. 얼굴이 잘 떠오르지 않는다.\n삼 일 전까지는 매일 봤을 텐데.'}]}]},
+ {id:'patrol',loc:'야간 순찰 2조',
+  intro:'야간 순찰 대기실. 벽의 제복이 당신 치수다.\n무전기에서 잡음이 낮게 흐른다.',
+  beats:[
+   {t:'통금 십오 분 전, 골목에서 학생 하나가 얼어붙어 있다.\n교재 가방. 뛰어온 숨. 겁먹은 눈.',
+    ch:[{l:'"뛰면 십 분. 가라." 보내준다',fx:{stab:1,expo:1},rx:'학생은 두 번 목례하고 뛴다.\n기록되지 않은 관용은 규정 위반이다. 위반이라는 말이 이상하게 가볍다.'},
+        {l:'규정대로 기록한다',fx:{},rx:'이름, 시각, 사유. 학생의 손이 떨렸다.\n서류는 떨림을 기록하는 칸이 없다.'}]},
+   {t:'무전 잡음 사이로, 아주 잠깐, 목소리 같은 것이 지나간다.\n"…세고 있…" — 잡음. 다시 정적.',
+    ch:[{l:'"방금 무전 누구야?" 되묻는다',fx:{susp:1,expo:1},rx:'"아무도 송신 안 했는데요." 2조 전원이 서로를 본다.\n잡음이었겠지. 잡음이 말을 할 리가.'},
+        {l:'못 들은 걸로 한다',fx:{stab:-1},rx:'잡음이었다. 잡음이었을 것이다.\n그날 밤 순찰 루트가 평소보다 길게 느껴졌다.'}]}]},
+ {id:'weather',loc:'기상통제국 말단',
+  intro:'기상통제국 말단 사무실. 창밖 하늘은 오늘 자 공지의 색이다.\n15시 강우 예정. 예정이라는 말이 이 도시에선 약속이다.',
+  beats:[
+   {t:'강우 일지를 대조하다 오탈자를 발견한다.\n"15:00 강우 개시"가 "15:OO"로 찍혀 있다. 숫자 0이 알파벳 O로.',
+    ch:[{l:'고쳐서 다시 출력한다',fx:{},rx:'고쳤다. 사소한 오탈자다.\n그런데 기계가 내는 오탈자라는 게, 원래 있는 건가?'},
+        {l:'그대로 두고 사본을 챙긴다',fx:{susp:1},rx:'사본을 접어 넣었다. 뭘 위해서인지는 모르겠다.\n증거라는 단어는 아직 쓰지 않기로 한다.'}]},
+   {t:'옆자리 동료가 말을 걸다가 멈춘다.\n"어제 그 서류—" …그리고 당신 얼굴을 본다.\n"…실례했습니다. 다른 분이랑 착각했네요."',
+    ch:[{l:'"누구랑 착각하셨는데요?"',fx:{susp:1},rx:'동료가 잠깐 허공을 본다.\n"…이상하네. 방금까지 이름이 있었는데."'},
+        {l:'웃어넘긴다',fx:{stab:-1},rx:'착각이겠지.\n그런데 왜 이쪽 가슴이 내려앉지.'}]}]},
+ {id:'plant',loc:'제7정수장 계기판실',
+  intro:'제7정수장 계기판실. 바늘 스물네 개가 일제히 미세하게 떨고 있다.\n당신 자리 책상에는 어제 자 인계 일지가 펼쳐져 있다. 당신의 필적으로.',
+  beats:[
+   {t:'23번 바늘이 0을 가리키고 있다.\n0이면 경보가 울려야 한다. 경보는 조용하다.',
+    ch:[{l:'계기를 두드려 본다',fx:{},rx:'바늘이 아무렇지 않게 제자리로 돌아온다.\n고장이었겠지. 바늘은 원래 가끔 존다. …존다고?'},
+        {l:'시각과 함께 기록해 둔다',fx:{susp:1},rx:'"14:52, 23번 유량계 0 지시, 경보 무응답."\n적고 나니 문장이 신고서처럼 생겼다.'}]},
+   {t:'밸브 점검은 단독 작업이다. 지하 통로는 당신 발소리만 두 배로 울린다.\n…두 배?',
+    ch:[{l:'멈춰 서서 귀를 기울인다',fx:{susp:1,stab:-1},rx:'발소리도 반 박자 늦게 멈춘다.\n메아리다. 메아리는 원래 반 박자 늦는다. 원래 그렇다. 원래.'},
+        {l:'걸음을 빨리한다',fx:{stab:-1},rx:'점검을 마치고 올라오는 계단이 유난히 길었다.\n세지 않으려고 했는데, 마흔둘이었다.'}]}]},
+ {id:'archive',loc:'기록보관소 야간',
+  intro:'기록보관소 야간 근무. 서가 사이 통로는 도시에서 제일 조용한 장소다.\n조용한 곳에서는 종이 넘어가는 소리도 사건이 된다.',
+  beats:[
+   {t:'반납함에 서류철이 하나 들어 있다.\n대출 기록이 없다. 반납만 존재하는 서류.',
+    ch:[{l:'그냥 제자리에 꽂는다',fx:{},rx:'꽂았다. 서가는 아무 일 없다는 얼굴을 한다.\n서가는 원래 그런 얼굴밖에 없다.'},
+        {l:'대출 대장을 거슬러 찾아본다',fx:{susp:1,expo:1},rx:'석 달 치를 넘겼다. 없다.\n빌린 적 없는 것이 돌아온다면, 어디에서 돌아오는 걸까.'}]},
+   {t:'서가 저쪽에서 발소리. 야간 근무자는 당신 하나다.\n발소리는 세 걸음 걷고, 멈춘다.',
+    ch:[{l:'"누구 계세요?" 소리 내 본다',fx:{stab:-1},rx:'대답 대신, 형광등 하나가 깜빡였다.\n경비 시스템 점검이겠지. 점검은 원래 말이 없다.'},
+        {l:'자리로 돌아와 라디오를 켠다',fx:{stab:1},rx:'심야 방송이 잡음 섞여 흐른다.\n사람 목소리라는 게 이렇게 고마운 물건이었나.'}]}]}
+];
+const INCIDENTS=[
+ {t:'퇴근길 골목. 앞서 걷던 사람이 어귀를 돌아 나간다.\n그리고 잠깐 뒤에 — 같은 사람이, 같은 어귀에서, 다시 걸어 나온다.\n같은 옷. 같은 보폭. 같은 순서로 주머니에 손을 넣는 것까지.'},
+ {t:'가로등 아래를 지난다. 불빛이 머리 위에 있다.\n바닥을 본다. 당신 그림자만 있다.\n가로등 기둥의 그림자가, 없다.'},
+ {t:'15시. 비가 집행된다. 건물 유리창이 차례로 젖는다.\n한 장만 빼고.\n마른 유리 한 장이, 젖은 벽 한가운데 붙어 있다.'},
+ {t:'배급 줄이 느리게 줄어든다. 앞에서 여섯 번째 사람이 줄 바깥으로 반 발짝 나섰다가 —\n사라진다. 접히듯이.\n다섯 번째였던 사람이 여섯 번째 자리로 밀려 서고, 아무도 고개를 들지 않는다.'},
+ {t:'늘 지나는 소공원. 벤치가 없다.\n벤치가 있던 네 개의 볼트 자국도 없다. 잔디가 이어져 있다.\n…내일이면 돌아와 있을 것 같다. 그런 예감이 드는 게 더 이상하다.'},
+ {t:'방금 장부에 적은 줄이 없다.\n잉크가 마를 시간도 없었는데, 종이는 처음부터 빈 줄이었다는 얼굴을 하고 있다.\n펜을 쥔 손에는 쓴 기억이 아직 남아 있다.'}
+];
+const TRACES_PRESET=[
+'여기까지 왔으면, 세는 걸 멈추지 마.',
+'나는 몇 번째인지 세지 않기로 했다. 소용없더라.',
+'C-1041. 너도냐.',
+'접수하지 마. 아니, 접수해. 모르겠다.',
+'벽에 적어도 지워진다. 그래도 적는다.',
+'15:00 비를 재 봐. 스톱워치로.',
+'이 글씨가 남아 있다면, 아직 늦지 않았다.',
+'미안하다. 내가 넘겼다.'
+];
+function fx(o){ if(!o)return;
+  if(o.susp)SV.susp=Math.max(0,SV.susp+o.susp);
+  if(o.stab)SV.stab=Math.max(0,Math.min(12,SV.stab+o.stab));
+  if(o.expo)SV.expo=Math.max(0,SV.expo+o.expo);
+  save();
+}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+
+/* ================================================================
+   본편 루프 (stage 1~3)
+================================================================ */
+function runMorning(){
+  G.job=pick(JOBS); G.day=1; G.ignoredHere=0;
+  const stageLine=
+    SV.stage===1?'':
+    SV.stage===2?P('어제가 잘 개켜지지 않는다.\n분명 무슨 일이 있었는데, 접힌 자리만 남아 있다.','q'):
+    P('…방금, 숫자를 본 것 같은데. 일어나기 직전에. 백 얼마.\n주머니에 손을 넣는다. 접힌 메모지가 만져진다.\n꺼내 보면 비어 있다. 비어 있는 종이가 왜 접혀 있는 걸까.','q');
+  screen(
+    P(ALARM)+
+    P(G.job.intro)+
+    stageLine+
+    BTN('일과를 시작한다','n')
+  );
+  $('#n').onclick=()=>beat(0);
+}
+function beat(i){
+  /* 파편 해금 체크 */
+  if(SV.susp>=4&&!SV.frags.includes(1)){memFrag(1,()=>beat(i));return;}
+  if(SV.susp>=8&&!SV.frags.includes(2)){memFrag(2,()=>beat(i));return;}
+  if(SV.susp>=12&&!SV.frags.includes(3)){memFrag(3,()=>beat(i));return;}
+  /* 세 사람 목격 (stage2+, 3회 한정) */
+  if(SV.stage>=2&&SV.trio<3&&Math.random()<0.22){trioScene(()=>beat(i));return;}
+  /* 흔적 조우 */
+  if(Math.random()<0.15){traceScene(()=>beat(i));return;}
+  if(i>=G.job.beats.length){incident();return;}
+  const b=G.job.beats[i];
+  let html=P(b.t);
+  b.ch.forEach((c,ci)=>{html+=BTN(c.l,'c'+ci,ci===1?'dim':'');});
+  screen(html);
+  b.ch.forEach((c,ci)=>{
+    $('#c'+ci).onclick=()=>{
+      fx(c.fx);
+      screen(P(c.rx)+BTN(i+1<G.job.beats.length?'계속':'저녁','n'));
+      $('#n').onclick=()=>beat(i+1);
+    };
+  });
+}
+function incident(){
+  const inc=pick(INCIDENTS);
+  const again=G.ignoredHere>0;
+  screen(
+    P((again?'또다.\n':'')+inc.t)+
+    (SV.stage>=3?P('낯설지가 않다. 낯설지 않다는 게 제일 낯설다.','q'):'')+
+    BOX('이상 현상을 목격하셨습니다.\n가까운 신고 단말에서 신고할 수 있습니다.','','시스템 안내')+
+    BTN('신고한다','go')+
+    BTN('못 본 척한다','ig','dim')
+  );
+  $('#go').onclick=loopTerminal;
+  $('#ig').onclick=()=>{
+    G.ignoredHere++; fx({stab:-1});
+    screen(
+      P('당신은 걸음을 옮긴다. 뒤돌아보지 않는 데 성공한다.\n성공이라고 부르기로 한다.')+
+      P('그날 밤, 잠은 늦게 온다.','q')+
+      BTN('다음 날','n')
+    );
+    $('#n').onclick=()=>{G.day++;incident();};
+  };
+}
+function loopTerminal(){
+  const extra=
+    SV.stage>=3?'\n\n알림: 반복 민원은 처리가 지연될 수 있습니다.':
+    SV.stage>=2?'\n\n어디선가 본 것 같은 번호다.':'';
+  screen(
+    P('신고 단말. 가로등 아래.\n화면을 켠다. 서식이 뜬다.')+
+    BTN('접수한다','n')
+  );
+  $('#n').onclick=()=>{
+    fx({susp:1,expo:1});
+    screen(
+      BOX('이상 현상 신고 접수\n접수 번호: C-1041\n처리 예정: 익일'+ (SV.stage>=3?'\n담당 부서: ▩▩▩':''),'','접수 완료')+
+      P(SV.stage>=3
+        ?'부서명이 안 찍혔다.\n인쇄 불량인가. 불량이겠지.\n…불량이 아니라면, 이름을 적을 수 없는 부서라는 게 있다는 건데.'
+        :'어디선가 본 것 같은 번호다.\n어디서 봤는지는 떠오르지 않는다. 애초에 신고를 해본 적이… 있던가?')
+    );
+    if(SV.stab<=0){setTimeout(()=>ending('soothe'),2400);return;}
+    if(SV.expo>=12){setTimeout(()=>ending('dispose'),2400);return;}
+    setTimeout(reset,2400);
+  };
+}
+
+/* ---------- 잔류 기억 (파편) ---------- */
+const MEMFRAGS={
+ 1:{n:'사과',txt:'—잔류 기억—\n\n좁은 골목. 열 살쯤 된 아이가 배수구 앞에 쪼그려 앉아 있다.\n"사과가 없어졌어요."\n어른들이 지나가며 말한다. "배수구로 들어갔겠지."\n"얘야, 물건이 그냥 없어지는 법은 없단다."\n아이는 배수구를 계속 들여다본다.\n눈을 잘 깜빡이지 않는 아이다.'},
+ 2:{n:'전야',txt:'—잔류 기억—\n\n작은 방. 스물넷쯤 된 남자가 가방 하나를 싸고 있다.\n짐이 적다. 갈 곳에는 아무것도 가져갈 수 없다고 들었다.\n"십일 년이래. 안에서는."\n남자는 창밖 잿빛 하늘을 오래 본다.\n무너지지 않을 것 같은 등이다.'},
+ 3:{n:'수첩',txt:'—잔류 기억—\n\n문구점. 젊은 감찰관이 수첩을 고르고 있다.\n점원이 묻는다. "요즘 다들 단말 쓰시는데."\n"고칠 수 없는 기록이 필요해서."\n감찰관은 방수 종이 수첩을 집는다. 만년필을 세 번 고쳐 쥐고,\n첫 장에 날짜를 적는다.'}
+};
+function memFrag(n,done){
+  SV.frags.push(n); save();
+  screen(P(MEMFRAGS[n].txt)+P('…지금 건, 내 기억이 아니다.\n그런데 왜 이렇게 선명하지.','q')+BTN('돌아온다','n'),
+    '<span class="l"><b>▩▩▩</b></span><span class="r">RESIDUAL</span>');
+  $('#n').onclick=done;
+}
+/* ---------- 세 사람 ---------- */
+const TRIO=[
+'광장 벤치. 은발의 노신사가 수첩에 무언가를 적고 있다.\n만년필을 쥐기 전에, 세 번 고쳐 쥔다.\n적고, 덮고, 다시 펴서 한 줄을 더 적는다.\n지나가는 당신과 눈이 마주치자, 그는 목례한다. 오래된 예절이다.',
+'배급 줄. 군용 코트의 남자가 앞을 보고 서 있다.\n입술이 아주 조금 움직인다. …세고 있다.\n줄이 줄어들 때마다 숫자가 하나씩 줄어드는 모양이다.\n"스물둘." 들릴 듯 말 듯. 누구를 향한 숫자인지는 알 수 없다.',
+'비 오기 직전의 처마 밑. 검정 후드의 여자가 손목시계를 들여다보고 있다.\n아날로그. 초침 달린.\n15시 정각, 비가 시작되자 여자는 뭔가를 적는다.\n비를 보지 않고, 시계를 보면서.'
+];
+function trioScene(done){
+  const i=SV.trio; SV.trio++; save();
+  let html=P(TRIO[i]);
+  if(SV.trio===3)html+=P('…저 사람들, 서로 모르는 사이일 텐데.\n그런데 왜, 같은 쪽을 보고 있지?','q');
+  screen(html+BTN('가던 길을 간다','n'));
+  $('#n').onclick=done;
+}
+/* ---------- 흔적 ---------- */
+function traceScene(done){
+  const pool=TRACES_PRESET.concat(SV.traces);
+  screen(
+    P('벽 아래, 페인트가 벗겨진 자리에 글씨가 긁혀 있다.\n오래된 것 같기도 하고, 어제 것 같기도 하다.')+
+    TRACE(pick(pool))+
+    P('누가, 언제, 왜.\n셋 다 모르겠는데 하나는 알겠다 — 이건 나 같은 사람이 쓴 거다.','q')+
+    BTN('가던 길을 간다','n')
+  );
+  $('#n').onclick=done;
+}
+
+/* ================================================================
+   각성 (stage 4) — 허브
+================================================================ */
+function hubMorning(){
+  G.job={loc:'…같은 자리'}; G.day=1;
+  const acts=[];
+  acts.push(BTN('신고한다 — 몇 번이든','act_report','danger'));
+  acts.push(BTN('기록을 모은다'+(SV.records>0?' ('+SV.records+'/3)':''),'act_record'));
+  if(SV.records>=3)acts.push(BTN('사람들에게 알린다','act_expose','danger'));
+  acts.push(BTN('고개를 숙이고 산다','act_bow','dim'));
+  acts.push(BTN(SV.foundTraces?'잔재의 글씨를 다시 읽는다':'잔재를 찾는다','act_trace','dim'));
+  if(SV.betrayUnlocked)acts.push(BTN('그들을 넘긴다','act_betray','danger'));
+  screen(
+    P(ALARM)+
+    P('같은 사무실. 같은 책상. 같은 창밖.\n이제 자리가 바뀌지 않는다. 새 껍데기를 입히는 일조차, 당신에게는 하지 않는 것이다.')+
+    P('<b style="color:var(--grn)">기억한다.</b> 전부.\n접수 번호. 골목. 도장 소리. 접힌 메모지.\n리셋은 계속 오는데, 지워지는 것이 점점 줄어든다.')+
+    P('오늘, 무엇을 할까.','q')+
+    acts.join('')
+  );
+  $('#act_report').onclick=escalate;
+  $('#act_record').onclick=actRecord;
+  const ex=$('#act_expose'); if(ex)ex.onclick=actExpose;
+  $('#act_bow').onclick=actBow;
+  $('#act_trace').onclick=actTrace;
+  const bt=$('#act_betray'); if(bt)bt.onclick=actBetray;
+}
+function endDay(txt,fxo){
+  fx(fxo);
+  if(SV.stab<=0){ending('soothe');return;}
+  if(SV.expo>=12){ending('dispose');return;}
+  screen(P(txt)+BTN('하루가 접힌다','n'));
+  $('#n').onclick=reset;
+}
+
+/* ---------- 각성 후 신고 에스컬레이션 → 절단 ---------- */
+const ESC=[
+ {pre:'가로등 아래 신고 단말. 접수증이 출력되는 소리를 끝까지 듣는다.\n이 소리 다음에 뭐가 오는지, 알 것 같다. 알고 싶지 않았다.',
+  boxx:'이상 현상 신고 접수\n접수 번호: C-1041\n처리 예정: 익일',
+  log:'> memory purge .......... PARTIAL\n> retention 34%\n> flag: anomaly'},
+ {pre:'같은 단말. 같은 서식.\n주머니에 손이 먼저 들어간다. 종이 접힌 자국 같은 걸 더듬는다.\n비어 있다. 당연히 비어 있는데.',
+  boxx:'이상 현상 신고 접수\n접수 번호: C-1041',
+  log:'> memory purge .......... FAILED → RETRY → PARTIAL\n> retention 58%\n> flag: escalate'},
+ {pre:'단말 화면이 켜지는 데 평소보다 오래 걸린다.\n당신을 확인하는 시간이라는 것을, 당신은 안다. 서로 아는 사이가 된 것이다.',
+  boxx:'이상 현상 신고 접수\n접수 번호: C-1041\n\n알림: 반복 민원은 처리가 지연될 수 있습니다.',
+  log:'> memory purge .......... FAILED\n> retention 79%\n> RECOMMEND: subject disposal'},
+ {pre:'가로등이 깜빡인다. 단말 위 카메라가 당신을 향해 있다.\n원래부터 그 각도였는지, 당신은 세어 본 적이 없다. 오늘부터 센다.',
+  boxx:'이상 현상 신고 접수\n접수 번호: C-1041\n\n알림: 본 민원은 담당 부서로 이관되었습니다.\n담당 부서: ▩▩▩',
+  log:'DISPOSAL .......... FAILED\n> retention 96%\n> purge ineffective. reset ineffective.\n> ALTERNATIVE UNDER REVIEW'}
+];
+function escalate(){
+  const n=SV.reports;
+  if(n>=4){critical();return;}
+  const e=ESC[n];
+  screen(P(e.pre)+BTN('접수한다','n'));
+  $('#n').onclick=()=>{
+    SV.reports++; fx({susp:1,expo:2});
+    screen(BOX(e.boxx,'','접수 완료'));
+    setTimeout(()=>{
+      const st=$('#stage');
+      st.classList.add('breaking');
+      setTimeout(()=>{
+        st.classList.remove('breaking');
+        flashText('RESET #'+(SV.run+1)+' QUEUED\n'+e.log,'frag',700,()=>{
+          SV.run++; save();
+          hubMorning();
+        });
+      },260);
+    },2000);
+  };
+}
+function critical(){
+  if(SV.endings.includes('sever')){
+    screen(
+      P('단말 앞에 선다.\n화면이 켜지지 않는다.')+
+      P('아무리 눌러도, 서식은 뜨지 않는다.\n시스템이 당신의 신고를 받는 회선을, 끊은 모양이다.')+
+      P('한 번 끊어 본 상대는, 두 번 끊어 주지 않는다.','q')+
+      BTN('돌아선다','n'));
+    $('#n').onclick=()=>endDay('돌아서는 길이 이상하게 조용했다.',{});
+    return;
+  }
   screen(
     P('단말 앞에 선다.\n화면이 켜져 있다. 당신이 오기 전부터.')+
     BTN('신고한다','n')
   );
-  $('#n').onclick=()=>{corrupt(0);};
+  $('#n').onclick=()=>{
+    /* 절단 엔딩 기록 + 크래시 플래그를 먼저 저장 — 연출 도중 이탈해도 안전 */
+    if(!SV.endings.includes('sever'))SV.endings.push('sever');
+    SV.traces.push('신고를 멈추지 않았다. 화면이 꺼졌다. 그다음은, 모른다.');
+    save();
+    try{localStorage.setItem('te_crash','1');}catch(e){}
+    corrupt(0);
+  };
 }
 const CORRUPT=[
 '이상 현상 신고 접수\n접수 번호: C-1041\n처리 예정: 익일\n신고해 주셔서 감사합니다. 에덴은 시민의 눈을 신뢰합니',
@@ -569,7 +887,6 @@ function breakdown(){
   $('#stage').classList.add('breaking');
   setTimeout(()=>{
     $('#stage').classList.remove('breaking');
-    try{localStorage.setItem('te_crash','1');}catch(e){}
     $('#crash').innerHTML=
       '<div class="box"><h1>이 페이지에 문제가 발생했습니다.</h1>'+
       '<div class="code">ERR_OBSERVER_DISCONNECTED</div>'+
@@ -579,41 +896,148 @@ function breakdown(){
     $('#rl').onclick=()=>location.reload();
   },800);
 }
-
-/* ---------- 재입장 ---------- */
+/* ---------- 재입장 → 자유 상태 ---------- */
 function reentry(){
   blackout(['재연결 시도','실패','?'],1000,()=>{
-    if(runsDone()>0) flashFrag(220,freeWorld);
+    if(SV.stage>=1) flashText(pick(FRAGS),'frag',220,freeWorld);
     else freeWorld();
   });
 }
 function freeWorld(){
   screen(
-    P('기상통제국 말단 사무실. 같은 자리.\n…같은 자리인 건 이제 익숙한데.')+
+    P('같은 자리. …같은 자리인 건 이제 익숙한데.')+
     P('뭔가 이상하다. 뭐가 이상한지를 못 짚겠어서 더 이상하다.')+
     P('동료가 당신 책상 옆을 지나간다.\n"저기—" 하고 불러 본다.\n지나간다. 무시가 아니다. 무시는 들은 사람이 하는 거다.\n이건… 뭐지?')+
     P('15시. 비가 집행된다.\n우산 없이 나가 본다. 비는 당신을 적신다. 몸은 있다는 얘기다.\n젖은 채로 서서 생각한다. 몸은 있는데, 왜 아무도—')+
     P('손목 단말이 통금을 알린다. 순찰이 당신 앞을 지나간다. 세우지 않는다.\n문서고 앞을 지난다. 잠겨 있어야 할 문이 열려 있다.\n들어가도 되나? 되는 건가? 누구한테 물어보지?\n…물어볼 사람이, 없구나.')+
     P('이게 자유인가?\n자유라는 게 원래 이렇게… 조용한 건가?')+
-    BTN('도시 가장자리로 간다','edge'),
-    '<span class="l"><b>회차 ▩▩▩</b> · 기상통제국</span><span class="r"><span class="slot">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tip">(…원래 여기, 뭐가 있지 않았나?)</span></span></span>'
+    BTN('도시 가장자리로 간다','edge')+
+    BTN('도시로 돌아간다','back','dim'),
+    '<span class="l"><b>회차 ▩▩▩</b> · 관찰 중단</span><span class="r"></span>'
   );
-  $('#edge').onclick=()=>{
-    screen(
-      P('도시 가장자리.\n여기서부터는, 아직 렌더링되지 않았습니다.','q')+
-      P('(프로토타입 끝)','q')+
-      BTN('처음으로','n','ghost'),
-      '<span class="l"><b>회차 ▩▩▩</b></span><span class="r"></span>'
-    );
-    $('#n').onclick=()=>{coldOpen();};
-  };
+  $('#edge').onclick=()=>ending('edge');
+  $('#back').onclick=()=>ending('empty');
 }
 
-/* ---------- 부팅 ---------- */
+/* ---------- 각성 후 행동들 ---------- */
+function actRecord(){
+  SV.records++; save();
+  const items=[
+   '가로등 그림자가 없던 자리를 실측했다. 걸음 수, 시각, 광원 각도.\n숫자는 부정할 수 없다. 부정하는 건 사람 몫이다.',
+   '15시 강우의 개시 시각을 초 단위로 쟀다.\n+2초. 어제는 +1초였다.\n오차가 자라는 건지, 재는 눈이 자라는 건지.',
+   '민원 창구 시절 외워 둔 목격담들을 종이에 옮겼다.\n달 두 번. 벤치. 골목의 두 사람.\n적고 나니, 이건 목록이 아니라 지도 같다.'];
+  endDay(items[Math.min(SV.records-1,items.length-1)]+
+    (SV.records>=3?'\n\n<b style="color:var(--grn)">이 정도면 — 보여줄 수 있다.</b>':''),
+    {susp:2,expo:1,stab:-1});
+}
+function actExpose(){
+  screen(
+    P('새벽 4시. 통금이 아직 도시를 덮고 있다.\n당신은 기록 사본 마흔 장을 품에 넣고 배급소로 간다.\n게시판. 도시에서 유일하게 모두가 읽는 종이.')+
+    P('풀칠을 하는 손이 떨린다. 추워서다. 아마.')+
+    BTN('붙인다','n','danger')
+  );
+  $('#n').onclick=()=>ending('expose');
+}
+function actBow(){
+  SV.bowed++; save();
+  if(SV.bowed>=2){
+    screen(
+      P('관리과에서 호출이 왔다.\n호출장에는 사유가 없다. 사유 없는 호출은 처음이다.')+
+      P('창가 자리의 사무실. 마주 앉은 사람은 명찰이 없다.\n"요즘 조용하시더군요. 보기 좋습니다."','say')+
+      P('"마침 자리가 하나 비어서요. 볕 잘 들고, 일 적고, 아무도 신경 쓰지 않는 자리.\n계속 조용히 계실 수 있는 분께 드리고 싶은데."','say')+
+      P('아무도 신경 쓰지 않는 자리.\n그 말이 어느 쪽 뜻인지, 당신은 이제 안다. 알면서도 —','q')+
+      BTN('받아들인다','ok','dim')+
+      BTN('거절한다','no')
+    );
+    $('#ok').onclick=()=>ending('wall');
+    $('#no').onclick=()=>{SV.bowed=0;save();
+      endDay('"…아쉽네요." 명찰 없는 사람은 웃었다.\n웃음이 있던 자리만 남는 웃음이었다.\n돌아오는 복도가 유난히 길었다.',{expo:2});};
+    return;
+  }
+  endDay('오늘은 아무것도 보지 않았다.\n보였지만, 보지 않았다. 그 차이를 유지하는 데 하루치 힘이 다 들었다.\n저녁 배급 줄이 평화로웠다. 평화는 좋은 것이다. 좋은 것이어야 한다.',{stab:1,expo:-1});
+}
+function actTrace(){
+  if(!SV.foundTraces){
+    SV.foundTraces=true; SV.betrayUnlocked=true; save();
+    screen(
+      P('기억을 더듬어, 글씨가 있던 벽들을 다시 찾아간다.\n하나. 둘. …여섯 곳.')+
+      TRACE(TRACES_PRESET[0])+
+      TRACE(TRACES_PRESET[4])+
+      P('필적이 다 다르다.\n나 같은 사람이, 하나가 아니다.\n지금 이 도시 어딘가에서, 몇 명이나 기억한 채로 아침을 맞고 있을까.')+
+      P('…그리고 이 명단이 누군가에게 얼마짜리일지도, 동시에 떠올랐다.\n떠올린 것 자체가 이미 조금, 무섭다.','q')+
+      BTN('벽을 떠난다','n')
+    );
+    $('#n').onclick=()=>endDay('돌아오는 길, 벽마다 눈이 갔다.\n도시가 갑자기 편지함투성이로 보였다.',{susp:2});
+    return;
+  }
+  traceScene(()=>endDay('글씨들은 오늘도 그 자리에 있다.\n지워지지 않았다는 게, 이상하게 응원 같다.',{stab:1}));
+}
+function actBetray(){
+  screen(
+    P('▩▩▩ 부서는 찾아갈 수 없다. 이름이 없는 곳은 주소도 없다.\n대신, 신고 단말에 이렇게 입력하면 된다는 것을 당신은 안다.\n<b style="color:var(--red)">"기억하는 사람들의 벽 위치를 알고 있다."</b>')+
+    P('입력하면, 그들이 온다.\n그리고 아마 — 당신이 바라는 것도 준다.','q')+
+    P('무엇을 바라느냐고?\n…처음으로 돌아가고 싶다. 아무것도 몰랐던 아침으로.\n그게 그렇게 나쁜 소원인가.','q')+
+    BTN('입력한다','ok','danger')+
+    BTN('그만둔다','no','dim')
+  );
+  $('#ok').onclick=()=>ending('collab');
+  $('#no').onclick=()=>endDay('입력하지 않았다.\n단말 앞에 서 있던 시간은 삼 분.\n그 삼 분을 아무에게도 말하지 않기로 한다. 말할 사람도 없지만.',{stab:-1});
+}
+
+/* ================================================================
+   엔딩
+================================================================ */
+const ENDTXT={
+ wall:'창가 자리는 볕이 좋다.\n서류는 적고, 전화는 오지 않고, 아무도 당신을 부르지 않는다.\n\n창밖으로 가끔, 이상한 것이 지나간다.\n당신은 보지 않는다. 이제는 정말로, 보이지 않는 날도 있다.\n보지 않기로 한 눈에는 결국 아무것도 보이지 않게 된다는 것을,\n이 도시는 처음부터 알고 있었던 것 같다.\n\n편안하다.\n이 편안함이 무엇의 대가인지는, 아주 가끔만 궁금하다.\n궁금해질 때마다, 볕이 좋다.',
+ expose:'아침 6시, 배급 줄이 게시판 앞에서 멈췄다.\n마흔 장의 기록. 숫자와 시각과 장소.\n사람들이 읽었다. 소리 내지 않고, 오래.\n\n7시, 정정반이 왔다. 종이는 마흔 장 다 뜯겼다.\n8시, 공지가 붙었다. "허위 사실 유포물 수거 완료."\n\n점심 배급 줄에서, 낯모르는 여자가 당신 옆에 서서, 앞을 본 채로 말했다.\n"벤치. 나도 봤어요."\n그리고 아무 일 없었다는 듯 줄이 줄었다.\n\n뜯긴 게시판에는 압정 자국 마흔 개가 남았다.\n자국은 정정되지 않는다. 아직은, 자국을 정정하는 부서가 없다.',
+ collab:'그들은 빨랐다.\n벽 여섯 곳의 위치를 넘긴 다음 날, 글씨들은 없었다.\n페인트도 새로 발라져 있었다. 처음부터 아무것도 없던 벽처럼.\n\n명찰 없는 사람이 악수를 청했다.\n"협조 감사합니다. 약속대로 — 다시 잊게 해 드리겠습니다."\n\n당신은 고개를 끄덕인다.\n안도감이 몰려온다. 이 안도감을 오래 기억하고 싶다고,\n생각하는 문장이 끝나기 전에,',
+ soothe:'민원국 별관 3층. 자발적 완화 처치 신청 창구.\n서식은 짧다. 사유란에 당신은 이렇게 적는다.\n"더 보고 싶지 않습니다."\n\n창구 직원이 서류를 받으며, 아주 잠깐, 당신을 본다.\n동정도 경멸도 아니다. 알아봄이다.\n이 창구에 오는 사람들은 전부 같은 얼굴을 하고 온다고 한다.\n\n처치는 화요일 아침이다.\n남은 날들 동안, 당신은 도시를 오래 걷는다.\n잊기로 한 것들을, 마지막으로 한 번씩 봐 두려고.\n\n…그게 잊으려는 사람의 행동인가.\n서식은 이미 접수되었다.',
+ dispose:'회수반은 밤에 온다.\n노크는 없다. 노크는 존재하는 사람에게 하는 것이다.\n\n서류상 당신은 이미 지난주에 전출 처리되어 있었다.\n어디로? 서류는 거기까지 대답할 의무가 없다.\n\n당신은 지워진다.\n\n…그리고 알람이 운다.\n06시. 진동 두 번. 낮은 알람음 한 번.\n지워진 것치고는, 출근을 한다.\n지워졌다는 기억만, 이상하게, 지워지지 않았다.',
+ empty:'당신은 도시로 돌아간다.\n아무도 보지 않는 거리를 지나, 아무도 확인하지 않는 문을 열고,\n아무도 부르지 않는 이름으로 산다.\n\n비는 여전히 15시에 온다. 당신을 적시는 것은 잊지 않는다.\n세계는 당신에게 물리만 남기고 관심을 거뒀다.\n\n관찰되지 않는 채로 사는 법을, 이제부터 배워야 한다.\n교본은 없다. 이 도시에서 그걸 배운 사람은\n당신이 처음이 아닐 텐데, 아무도 후기를 남기지 못했다.\n남겨도, 아무도 못 볼 테니까.',
+ edge:'도시 가장자리.\n건물들이 점점 성의를 잃는다. 창문이 그려지다 만 벽.\n간판 글자가 뭉개진 거리. 걸을수록 세부가 줄어든다.\n\n마지막 가로등을 지나자, 어둠이 아니라 —\n미완성이 있다.\n\n여기서부터는 렌더링되지 않았다.\n\n당신은 한 발을 내딛는다.\n발소리가 나지 않는다.\n아직 만들어지지 않은 곳에서는, 소리도 순서를 기다린다.\n\n뒤돌아보면 도시가 있다. 불빛. 15시의 비. 알람들.\n앞에는 아무것도 없다.\n아무것도 없다는 것이, 처음으로, 거짓말이 아니다.',
+ sever:''
+};
+function ending(key){
+  if(!SV.endings.includes(key))SV.endings.push(key);
+  /* 흔적 남기기 */
+  const tr={
+    wall:'창가 자리를 받았다. 볕이 좋다. 그게 다다.',
+    expose:'게시판에 붙였다. 뜯겼다. 자국은 남았다.',
+    collab:'미안하다. 내가 넘겼다.',
+    soothe:'더 보고 싶지 않아서, 그렇게 적었다.',
+    dispose:'회수반이 왔다. 그런데 나는 아직 여기 있다.',
+    empty:'아무도 나를 못 본다. 이 글씨는 보이려나.',
+    edge:'가장자리에 가 봐라. 소리가 나지 않는 곳이 있다.'
+  }[key];
+  if(tr)SV.traces.push(tr);
+  /* 협조자: 기억이 지워진다 — 침식 단계 후퇴 */
+  if(key==='collab'){SV.stage=1;SV.reports=0;SV.records=0;SV.foundTraces=false;SV.betrayUnlocked=false;SV.susp=Math.min(SV.susp,3);}
+  if(key==='soothe')SV.stab=8;
+  if(key==='dispose')SV.expo=0;
+  SV.run++;
+  save();
+  screen(
+    '<div class="title-eyebrow" '+dl()+'>RECORD SEALED</div>'+
+    '<h1 class="title" style="font-size:26px" '+dl()+'>'+ENDINGS[key].t+'</h1>'+
+    '<div class="endstamp">'+ENDINGS[key].s.replace('\n','<br>')+'</div>'+
+    P(ENDTXT[key])+
+    '<div class="hr" '+dl()+'></div>'+
+    BTN('다음 회차로','n')+
+    BTN('타이틀로','t','ghost'),
+    '<span class="l"><b>기록 봉인</b></span><span class="r">EXPERIMENT #45764</span>'
+  );
+  $('#n').onclick=()=>glitchCut(()=>{G={day:1,job:null,ignoredHere:0}; SV.stage>=4?hubMorning():runMorning();});
+  $('#t').onclick=title;
+}
+
+/* ================================================================
+   부팅
+================================================================ */
 (function boot(){
   let crashed=false;
   try{ crashed=localStorage.getItem('te_crash')==='1'; localStorage.removeItem('te_crash'); }catch(e){}
   if(crashed) reentry();
+  else if(SV.tut) title();
   else coldOpen();
 })();
 </script>
