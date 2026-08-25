@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">👁</text></svg>'>
+<title>TAMPERED EDEN — RUN #45764</title>
+<style>
+:root{
+  --bg:#05080a; --panel:#070b0e; --ink:#c8dfd0; --dim:#5c7264;
+  --grn:#5fe08d; --grn-soft:rgba(95,224,141,.14); --grn-line:rgba(95,224,141,.38);
+  --red:#f4756a; --red-line:rgba(244,117,106,.5);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"SF Mono",ui-monospace,Menlo,Consolas,"Apple SD Gothic Neo","Noto Sans KR",monospace;
+  font-size:15.5px; line-height:1.85; letter-spacing:.02em;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+#wrap{max-width:720px;margin:0 auto;padding:28px 14px 60px}
+
+/* ---------- 시스템창 프레임 ---------- */
+#stage{
+  position:relative; background:var(--panel);
+  border:1px solid var(--grn-line); border-radius:6px;
+  padding:34px 30px 40px; min-height:70vh;
+  box-shadow:0 0 30px rgba(95,224,141,.05), inset 0 0 60px rgba(95,224,141,.03);
+}
+#stage::before{ /* 이중 테두리 */
+  content:""; position:absolute; inset:7px; border:1px solid rgba(95,224,141,.14);
+  border-radius:4px; pointer-events:none;
+}
+#stage::after{ /* 스캔라인 */
+  content:""; position:absolute; inset:0; pointer-events:none; border-radius:6px;
+  background:repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px);
+}
+.deco{position:absolute; pointer-events:none; z-index:2}
+.deco.slash{width:64px;height:8px;
+  background:repeating-linear-gradient(-60deg, var(--grn-line) 0 5px, transparent 5px 11px);
+  opacity:.6}
+.deco.s-tl{top:-4px;left:22px} .deco.s-br{bottom:-4px;right:22px}
+.deco.bar{height:3px;background:var(--grn-line);opacity:.55}
+.deco.b-tl{top:-2px;left:96px;width:110px;clip-path:polygon(0 0,100% 0,calc(100% - 6px) 100%,0 100%)}
+.deco.b-tr{top:-2px;right:96px;width:110px;clip-path:polygon(6px 0,100% 0,100% 100%,0 100%)}
+.deco.b-bl{bottom:-2px;left:96px;width:70px} .deco.b-br{bottom:-2px;right:96px;width:70px}
+.deco.gem{top:-7px;left:50%;transform:translateX(-50%);width:120px;height:12px;
+  background:var(--grn-line);opacity:.7;
+  clip-path:polygon(10% 50%,22% 0,78% 0,90% 50%,78% 100%,22% 100%)}
+.deco.dot{top:-4px;width:6px;height:6px;border-radius:50%;background:var(--grn-line)}
+.deco.d-l{left:calc(50% - 78px)} .deco.d-r{right:calc(50% - 78px)}
+
+/* ---------- HUD ---------- */
+#hud{
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  border-bottom:1px solid rgba(95,224,141,.16); padding-bottom:12px; margin-bottom:26px;
+  font-size:12.5px; color:var(--dim); letter-spacing:.12em;
+}
+#hud .l b{color:var(--grn);font-weight:600}
+#hud .r{opacity:.7}
+#hud .slot{border-bottom:1px dashed rgba(95,224,141,.25);cursor:help;position:relative}
+#hud .slot .tip{display:none;position:absolute;top:130%;right:0;white-space:nowrap;
+  background:var(--panel);border:1px solid var(--grn-line);padding:4px 10px;border-radius:3px;
+  color:var(--ink);letter-spacing:.02em;z-index:5}
+#hud .slot:hover .tip, #hud .slot:active .tip{display:block}
+
+/* ---------- 본문 ---------- */
+.ln{margin:0 0 14px; opacity:0; animation:up .5s ease forwards; white-space:pre-line}
+.ln.q{color:var(--dim); font-style:normal}
+.ln.say{color:var(--grn); padding-left:14px; border-left:2px solid var(--grn-line)}
+@keyframes up{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.ln{animation:none;opacity:1}}
+
+/* 시스템 박스 (서식/안내) */
+.sysbox{
+  border:1px solid var(--grn-line); border-radius:4px; background:rgba(95,224,141,.04);
+  padding:16px 20px; margin:18px 0; color:var(--grn); white-space:pre-line;
+  opacity:0; animation:up .5s ease forwards; position:relative;
+}
+.sysbox .hd{font-size:11px;letter-spacing:.22em;color:var(--dim);margin-bottom:8px}
+.sysbox.warn{border-color:var(--red-line);color:var(--red);background:rgba(244,117,106,.05)}
+.sysbox.corrupt{animation:jit .12s steps(2) infinite}
+@keyframes jit{0%{transform:translate(0,0)}50%{transform:translate(1px,-1px)}100%{transform:translate(-1px,1px)}}
+.sysbox.corrupt{text-shadow:1px 0 rgba(244,117,106,.7), -1px 0 rgba(95,224,141,.7)}
+
+/* ---------- 버튼 ---------- */
+.btn{
+  display:block;width:100%;text-align:left;
+  background:transparent;border:1px solid var(--grn-line);border-radius:4px;
+  padding:12px 16px;margin-top:10px;font:inherit;color:var(--grn);
+  cursor:pointer;transition:background .12s;letter-spacing:.03em;
+  opacity:0;animation:up .5s ease forwards;
+}
+.btn:hover{background:var(--grn-soft)}
+.btn:focus-visible{outline:1px solid var(--grn);outline-offset:2px}
+.btn .arw{opacity:.6;margin-right:8px}
+.btn.dim{color:var(--dim);border-color:rgba(95,224,141,.18)}
+.btn.stamp{
+  text-align:center;color:var(--red);border-color:var(--red-line);
+  font-weight:700;letter-spacing:.3em;padding:14px}
+.btn.stamp:hover{background:rgba(244,117,106,.08)}
+.btn.ghost{border:none;color:var(--dim);text-align:center;font-size:13px}
+
+/* 도장 찍힘 */
+.stamped{position:relative}
+.stamped::after{
+  content:"착오 확인"; position:absolute; right:18px; top:50%;
+  transform:translateY(-50%) rotate(-12deg) ;
+  border:3px solid var(--red); color:var(--red); border-radius:4px;
+  padding:4px 12px; font-weight:800; letter-spacing:.25em; font-size:18px;
+  animation:thunk .25s cubic-bezier(.2,1.8,.4,1) both;
+}
+@keyframes thunk{from{transform:translateY(-50%) rotate(-12deg) scale(2.4);opacity:0}
+  to{transform:translateY(-50%) rotate(-12deg) scale(1);opacity:1}}
+
+/* ---------- 노이즈 ---------- */
+#noise{position:fixed;inset:0;z-index:60;display:none;background:#000}
+#noise canvas{width:100%;height:100%;display:block}
+#noiseTxt{position:fixed;z-index:61;inset:0;display:flex;align-items:center;justify-content:center;
+  color:var(--grn);font-size:15px;letter-spacing:.15em;text-align:center;white-space:pre-line;
+  text-shadow:0 0 12px rgba(95,224,141,.5)}
+
+/* ---------- 가짜 에러 ---------- */
+#crash{position:fixed;inset:0;z-index:80;display:none;background:#0d0f12;color:#c9ced6;
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif}
+#crash .box{max-width:520px;margin:26vh auto 0;padding:0 24px}
+#crash h1{font-size:21px;font-weight:600;margin:0 0 14px;letter-spacing:0}
+#crash .code{font-family:"SF Mono",ui-monospace,Menlo,monospace;color:#8a919c;font-size:14px;margin-bottom:30px}
+#crash button{
+  background:#2e5fb8;color:#fff;border:none;border-radius:4px;padding:9px 22px;
+  font:inherit;font-size:14px;cursor:pointer}
+#crash .foot{position:fixed;bottom:18px;left:0;right:0;text-align:center;
+  color:#3a3f47;font-size:11.5px;letter-spacing:.04em}
+
+/* 붕괴 */
+.breaking{animation:brk .10s steps(2) infinite}
+@keyframes brk{
+  0%{transform:translate(0,0);clip-path:inset(0)}
+  33%{transform:translate(-4px,2px);clip-path:inset(8% 0 12% 0)}
+  66%{transform:translate(4px,-3px);clip-path:inset(40% 0 5% 0)}
+  100%{transform:translate(-2px,1px);clip-path:inset(0 0 55% 0)}}
+
+/* 타이틀 */
+.title-eyebrow{font-size:11px;letter-spacing:.35em;color:var(--dim);margin-bottom:18px;
+  opacity:0;animation:up .5s ease forwards}
+h1.title{font-size:34px;letter-spacing:.12em;color:var(--grn);margin:0 0 6px;font-weight:700;
+  text-shadow:0 0 18px rgba(95,224,141,.35);opacity:0;animation:up .5s ease forwards}
+.title-sub{color:var(--dim);font-size:13px;letter-spacing:.2em;margin-bottom:34px;
+  opacity:0;animation:up .5s ease forwards}
+.hr{border:none;border-top:1px solid rgba(95,224,141,.14);margin:24px 0}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="stage">
+    <i class="deco slash s-tl"></i><i class="deco slash s-br"></i>
+    <i class="deco bar b-tl"></i><i class="deco bar b-tr"></i>
+    <i class="deco bar b-bl"></i><i class="deco bar b-br"></i>
+    <i class="deco gem"></i><i class="deco dot d-l"></i><i class="deco dot d-r"></i>
+    <div id="hud"></div>
+    <div id="screen"></div>
+  </div>
+</div>
+<div id="noise"><canvas id="nzc"></canvas></div>
+<div id="noiseTxt" style="display:none"></div>
+<div id="crash"></div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const G={day:1, loc:'', looked:false, asked:false, recorded:false, avoided:false};
+
+/* ---------- 렌더 헬퍼 ---------- */
+let seq=0;
+function dl(){return 'style="animation-delay:'+(seq++*140)+'ms"';}
+function P(t,cls){return '<p class="ln '+(cls||'')+'" '+dl()+'>'+t+'</p>';}
+function BOX(t,cls,hd,id){return '<div class="sysbox '+(cls||'')+'" '+dl()+(id?' id="'+id+'"':'')+'>'+(hd?'<div class="hd">'+hd+'</div>':'')+t+'</div>';}
+function BTN(t,id,cls){return '<button class="btn '+(cls||'')+'" id="'+id+'" '+dl()+'><span class="arw">→</span>'+t+'</button>';}
+function screen(html,hudTxt){
+  seq=0;
+  $('#hud').innerHTML=hudTxt!==undefined?hudTxt:hudDefault();
+  $('#screen').innerHTML=html;
+  window.scrollTo(0,0);
+}
+function hudDefault(){
+  return '<span class="l"><b>근무 '+G.day+'일차</b> · '+G.loc+'</span><span class="r">EXPERIMENT #45764</span>';
+}
+
+/* ---------- 사운드 (도장) ---------- */
+let AC=null;
+function thud(){
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    const t=AC.currentTime, o=AC.createOscillator(), g=AC.createGain();
+    o.type='sine'; o.frequency.setValueAtTime(120,t); o.frequency.exponentialRampToValueAtTime(45,t+.12);
+    g.gain.setValueAtTime(.5,t); g.gain.exponentialRampToValueAtTime(.001,t+.2);
+    o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t+.22);
+  }catch(e){}
+}
+
+/* ---------- 노이즈 ---------- */
+function noise(ms,lines,done){
+  const nz=$('#noise'), cv=$('#nzc'), tx=$('#noiseTxt');
+  nz.style.display='block';
+  cv.width=160; cv.height=100;
+  const ctx=cv.getContext('2d');
+  let run=true;
+  (function frame(){
+    if(!run)return;
+    const img=ctx.createImageData(160,100);
+    for(let i=0;i<img.data.length;i+=4){
+      const v=Math.random()*70;
+      img.data[i]=v*.6; img.data[i+1]=v; img.data[i+2]=v*.7; img.data[i+3]=255;
+    }
+    ctx.putImageData(img,0,0);
+    requestAnimationFrame(frame);
+  })();
+  if(lines&&lines.length){
+    tx.style.display='flex';
+    let i=0;
+    const step=()=>{ if(i<lines.length){ tx.textContent=lines[i++]; setTimeout(step,Math.floor(ms/lines.length)); } };
+    step();
+  }
+  setTimeout(()=>{ run=false; nz.style.display='none'; tx.style.display='none'; tx.textContent=''; done&&done(); },ms);
+}
+
+/* ================================================================
+   장면
+================================================================ */
+function coldOpen(){
+  screen('','');
+  $('#screen').innerHTML='<div class="sysbox" style="animation:none;opacity:1;margin-top:18vh">'+
+    'EXPERIMENT #45764\nSUBJECT POOL : ACTIVE\nRUN : 001</div>';
+  setTimeout(title,900);
+}
+
+function title(){
+  screen(
+    '<div class="title-eyebrow" '+dl()+'>OBSERVATION IN PROGRESS</div>'+
+    '<h1 class="title" '+dl()+'>TAMPERED EDEN</h1>'+
+    '<div class="title-sub" '+dl()+'>RUN #45764 · 프로토타입 v0.1</div>'+
+    P('통제 도시 에덴. 이상 현상을 보고하는 시민과,\n그것을 "잘못 봤다"고 정정해 주는 도시.','q')+
+    BTN('근무를 시작한다','st'),
+    '<span class="l"><b>TAMPERED EDEN</b></span><span class="r">텍스트 프로토타입</span>'
+  );
+  $('#st').onclick=()=>{thud();morning1();};
+}
+
+/* ---------- 아침 ---------- */
+const ALARM='손목 단말이 06시를 알린다. 진동 두 번, 낮은 알람음 한 번.\n화면에 뜬다 — <b style="color:var(--grn)">통금 해제. 에덴 표준시 06:00.</b>';
+
+function morning1(){
+  G.day=1; G.loc='자택 · 제3주거구';
+  screen(
+    P(ALARM)+
+    P('창밖에서 셔터 올라가는 소리가 순서대로 들린다. 골목 끝에서부터, 매일 같은 순서로.\n당신은 그 순서를 외우고 있지 않다. 외울 이유가 없다. 어차피 내일도 같을 테니까.')+
+    P('배급 빵을 꺼낸다. 어제 받은 것. 표면에 배급 번호가 찍혀 있다.\n빵에 번호가 찍혀 나오는 도시라니 — 라고 생각해 본 적은 없다.\n빵은 원래 그렇게 생긴 것이다.')+
+    BTN('창밖을 잠시 내다본다','a')+BTN('바로 나갈 준비를 한다','b')
+  );
+  $('#a').onclick=()=>{G.looked=true;
+    screen(P('골목은 어제와 같다.\n같다는 걸 확인하고 나니, 이상하게 안심이 된다.\n…뭘 확인한 거지?')+BTN('출근한다','n'));
+    $('#n').onclick=office;};
+  $('#b').onclick=office;
+}
+
+/* ---------- 정정과 ---------- */
+function office(){
+  G.loc='시민민원국 정정과';
+  screen(
+    P('시민민원국 별관 2층, 정정과.\n당신의 자리엔 서류함과 도장 하나가 있다. 도장에는 이렇게 새겨져 있다.')+
+    BOX('착오 확인','', '','')+
+    P('계장이 지나가며 말한다. 인수인계라기보다는 혼잣말에 가깝게.')+
+    P('"우리 과 일은 간단해. 시민이 잘못 본 걸, 잘못 봤다고 확인해 드리는 거야.\n사람 눈이라는 게 원래 부실하거든. 그걸 공식적으로 정리해 주면 다들 안심하고 돌아가."','say')+
+    P('안심시켜 드리는 일. 나쁘지 않은 정의다.\n오늘 할당량: 민원 3건.')+
+    BTN('첫 번째 민원인을 부른다','n')
+  );
+  $('#n').onclick=m1;
+}
+
+function docBox(txt){
+  return BOX(txt,'','민원 서식 제7호','doc');
+}
+function stampFlow(afterFn){
+  const b=$('#stampBtn');
+  b.onclick=()=>{
+    thud();
+    $('#doc').classList.add('stamped');
+    b.disabled=true; b.style.opacity=.3;
+    setTimeout(afterFn,900);
+  };
+}
+
+function m1(){
+  screen(
+    P('민원 ① — 노파','q')+
+    docBox('"달이 두 번 떴어. 어제 밤에.\n하나가 지고 나서, 같은 자리에 하나가 또 떴다고."')+
+    P('노파는 확신에 차 있다. 확신에 찬 사람의 서류가 제일 처리하기 쉽다.\n서식 하단, 정정 사유 예시가 인쇄되어 있다: <i style="color:var(--dim)">착시 / 피로 / 광학 현상 / 고령.</i>')+
+    '<button class="btn stamp" id="stampBtn" '+dl()+'>착오 확인</button>'
+  );
+  stampFlow(()=>{
+    screen(
+      P('쾅.')+
+      P('노파는 서류를 받아 들고, 정말로 조금 안심한 얼굴이 되어 돌아간다.\n"그렇지. 내가 잘못 봤겠지. 고마워요."')+
+      P('당신은 방금 한 사람의 밤하늘을 정정했다.')+
+      BTN('다음 민원인','n'));
+    $('#n').onclick=m2;
+  });
+}
+
+function m2(){
+  screen(
+    P('민원 ② — 중년 남자','q')+
+    docBox('"출근길에 매일 앉는 벤치가 있는데.\n그저께 하루 없었어요. 어제는 다시 있고.\n페인트 벗겨진 자국까지 그대로."')+
+    P('없어졌다가, 돌아왔다.\n치웠다가 다시 놨겠지. 보수 공사였겠지. 사유 목록에서 고르기만 하면 된다.')+
+    '<button class="btn stamp" id="stampBtn" '+dl()+'>착오 확인</button>'+
+    BTN('조금 더 물어본다','ask','dim')
+  );
+  $('#ask').onclick=()=>{
+    G.asked=true;
+    screen(
+      P('"…자국까지 그대로인 게, 더 이상하지 않아요? 새로 놓은 거면?"','say')+
+      P('당신은 답하지 않는다. 답이 없어서.')+
+      docBox('"출근길에 매일 앉는 벤치가 있는데.\n그저께 하루 없었어요. 어제는 다시 있고.\n페인트 벗겨진 자국까지 그대로."')+
+      '<button class="btn stamp" id="stampBtn" '+dl()+'>착오 확인</button>');
+    stampFlow(m2after);
+  };
+  stampFlow(m2after);
+}
+function m2after(){
+  screen(P('쾅.')+P('남자는 서류를 접어 넣고 목례한다. 벤치 얘기는 이제 공식적으로 끝났다.\n비공식적으로 어디에 남는지는, 서식이 관여할 바 아니다.')+BTN('다음 민원인','n'));
+  $('#n').onclick=m3;
+}
+
+function m3(){
+  screen(
+    P('민원 ③ — 젊은 여자','q')+
+    P('세 번째 민원인은 서류를 내밀면서 당신 눈을 보지 않는다.')+
+    docBox('"…골목에서 사람이 나왔어요. 그리고 잠깐 뒤에,\n같은 사람이 같은 골목에서 또 나왔어요.\n같은 옷, 같은 걸음, 같은 순서로 주머니에 손 넣는 것까지.\n쌍둥이 아니에요. 그런 걸음은 둘일 수가 없어요."')+
+    P('정정 사유 예시: <i style="color:var(--dim)">착시 / 피로 / 광학 현상 / 유사 인물 오인.</i>\n목록은 이번에도 준비되어 있다. 목록은 항상 준비되어 있다.')+
+    P('여자가 처음으로 고개를 든다.')+
+    P('"…잘못 봤다고 해 주세요. 그러려고 왔어요."','say')+
+    '<button class="btn stamp" id="stampBtn" '+dl()+'>착오 확인</button>'+
+    BTN('기록해 둔다','rec','dim')
+  );
+  $('#rec').onclick=()=>{
+    G.recorded=true;
+    $('#rec').textContent='(퇴근 전, 메모지에 옮겨 적기로 한다)';
+    $('#rec').disabled=true;
+  };
+  stampFlow(()=>{
+    screen(
+      P('쾅.')+
+      P('여자는 안심하지 않았다. 다만 허가받은 얼굴이 되었다.\n잊어도 된다는 허가.')+
+      P('당신은 오늘 할당량을 채웠다.'+(G.recorded?'\n그리고 메모지 한 장을, 소매 안쪽에 접어 넣었다.':''))+
+      BTN('퇴근한다','n'));
+    $('#n').onclick=walkHome;
+  });
+}
+
+/* ---------- 퇴근길 ---------- */
+function walkHome(){
+  G.loc='제3주거구 방면 · 지름길 골목';
+  screen(
+    P('18시 40분. 통금까지 한 시간 이십 분.\n지름길 골목으로 접어든다. 매일 다니는 길. 외울 이유도 없이 외워진 길.')+
+    P('앞서 걷던 남자가 골목 어귀를 돌아 나간다.\n회색 외투. 오른손을 주머니에 넣으며. 보폭 일정.')+
+    P('당신이 어귀에 닿기 전에 —')+
+    P('같은 남자가, 같은 어귀에서, 다시 걸어 나온다.\n회색 외투. 오른손을 주머니에 넣으며. 보폭 일정.\n<b style="color:var(--grn)">같은 사람이 같은 곳에서 두 번 시작되었다.</b>')+
+    BTN('방금, 봤다.','n')
+  );
+  $('#n').onclick=saw;
+}
+
+function saw(){
+  screen(
+    P('봤다.')+
+    P('쌍둥이인가. 그런 걸음은 둘일 수가 없다 — 오늘 낮에 누가 한 말이더라.')+
+    P('낮에, 누가, 정확히 이 얘기를 했다.\n당신은 그 서류에 도장을 찍었다. <b style="color:var(--red)">착오 확인.</b>')+
+    P('지금 이 골목에서, 그 도장을 어디에 찍으면 되지?')+
+    BOX('이상 현상을 목격하셨습니다.\n가까운 신고 단말에서 신고할 수 있습니다. (도보 2분)','','시스템 안내')+
+    BTN('신고 단말로 간다','go')+
+    BTN('집에 간다','home','dim')
+  );
+  $('#go').onclick=terminal;
+  $('#home').onclick=homeNight;
+}
+
+function homeNight(){
+  G.avoided=true; G.loc='자택 · 제3주거구';
+  screen(
+    P('불을 끄고 눕는다.\n골목이 감긴 눈 안쪽에서 계속 시작된다. 같은 외투. 같은 보폭. 두 번.')+
+    P('잠은 늦게 온다.')+
+    BTN('아침','n')
+  );
+  $('#n').onclick=()=>{
+    G.day=2;
+    screen(
+      P(ALARM)+
+      P('출근길, 어제의 골목을 지난다.\n지나기만 할 생각이었다.')+
+      P('어귀에서 남자가 걸어 나온다. 회색 외투.\n당신은 걸음을 멈추고, 어귀를 본다.\n…이번엔 한 번뿐이다. 한 번뿐인 게, 왜 이렇게 안 믿기지.')+
+      BOX('이상 현상을 목격하셨습니다.\n가까운 신고 단말에서 신고할 수 있습니다. (도보 2분)','','시스템 안내')+
+      BTN('신고 단말로 간다','go')
+    );
+    $('#go').onclick=terminal;
+  };
+}
+
+/* ---------- 신고 단말 ---------- */
+function terminal(){
+  G.loc='신고 단말 · 가로등 7-C';
+  screen(
+    P('단말은 가로등 아래 있다. 공중전화 부스를 닮았고, 부스보다 밝다.')+
+    P('화면을 켠다. 서식이 뜬다. 낮에 수십 번 본 서식의 반대면.\n접수하는 쪽 화면은 처음 본다.')+
+    P('목격 내용을 입력한다. 손이 떨리는 건 추워서다. 아마.')+
+    BTN('접수한다','n')
+  );
+  $('#n').onclick=()=>{
+    thud();
+    screen(
+      BOX('이상 현상 신고 접수\n접수 번호: C-1041\n처리 예정: 익일\n\n신고해 주셔서 감사합니다. 에덴은 시민의 눈을 신뢰합니다.','','접수 완료')+
+      P('에덴은 시민의 눈을 신뢰합니다.')+
+      P('당신은 오늘 하루 종일, 시민의 눈을 정정하는 일을 했다.\n그 두 문장이 어떻게 같은 도시의 것인지, 잠깐 생각하려는데—')
+    );
+    setTimeout(()=>noise(3000,null,morning2),2600);
+  };
+}
+
+/* ---------- (체감) 2회차 ---------- */
+function morning2(){
+  G.day=1; G.loc='제7정수장 계기판실';
+  screen(
+    P(ALARM)+
+    P('제7정수장 계기판실. 바늘 스물네 개가 일제히 미세하게 떨고 있다.\n당신 자리 책상에는 어제 자 인계 일지가 펼쳐져 있다. 당신의 필적으로.')+
+    BTN('…? 내가 왜 여기 있더라?','n')
+  );
+  $('#n').onclick=()=>{
+    screen(
+      P('정수장. 그래, 정수장이지. 3년 차던가.\n바늘 스물네 개. 외울 이유도 없이 외워진 숫자.')+
+      P('…그런데 방금, 아주 잠깐,\n도장 소리 같은 게 들린 것 같았다.\n쾅, 하는.')+
+      P('여기엔 도장이 없다. 계기판실에 도장이 있을 리가.')+
+      P('당신은 일지를 끌어당긴다. 일과가 시작된다.')+
+      BTN('(프로토타입은 여기까지)','n','ghost')
+    );
+    $('#n').onclick=endScreen;
+  };
+}
+
+/* ---------- 종료 화면 ---------- */
+function endScreen(){
+  const marks=[];
+  if(G.looked)marks.push('아침에 창밖을 확인했다');
+  if(G.asked)marks.push('벤치에 대해 조금 더 물어봤다');
+  if(G.recorded)marks.push('민원 ③을 기록해 뒀다');
+  if(G.avoided)marks.push('한 번은 집으로 도망쳤다');
+  screen(
+    '<div class="title-eyebrow" '+dl()+'>RUN #45764 — SEGMENT END</div>'+
+    P('프로토타입 v0.1 — 1회차(가짜 튜토리얼)부터 첫 리셋까지.','q')+
+    (marks.length?BOX(marks.map(m=>'· '+m).join('\n'),'','이번 플레이의 선택'):'')+
+    P('이후 흐름: 일상 루프 → 사건 재발 → 신고/못 본 척 → 회차 반전(125) → 각성 → 임계.','q')+
+    '<div class="hr" '+dl()+'></div>'+
+    BTN('처음부터 다시','re')+
+    BTN('[개발용 미리보기] 신고 ⑤ 임계 — 크래시 시퀀스','crashBtn','dim'),
+    '<span class="l"><b>TAMPERED EDEN</b></span><span class="r">프로토타입</span>'
+  );
+  $('#re').onclick=()=>{Object.assign(G,{looked:false,asked:false,recorded:false,avoided:false});coldOpen();};
+  $('#crashBtn').onclick=crashSeq;
+}
+
+/* ================================================================
+   크래시 시퀀스 (개발용 미리보기)
+================================================================ */
+function crashSeq(){
+  G.day=1; G.loc='신고 단말 · 가로등 7-C';
+  screen(
+    P('단말 앞에 선다.\n화면이 켜져 있다. 당신이 오기 전부터.')+
+    BTN('신고한다','n')
+  );
+  $('#n').onclick=()=>{thud();corrupt(0);};
+}
+const CORRUPT=[
+'이상 현상 신고 접수\n접수 번호: C-1041\n처리 예정: 익일\n신고해 주셔서 감사합니다. 에덴은 시민의 눈을 신뢰합니',
+'이상 현상 신고 접수\n접수 번호: C-1041 1041 1041 1041\n처리 예정: \n에덴은 시민의 눈을',
+'이상 현상 신고 접\n접수 번호: ▩-▩▩▩▩\n에덴은 눈을'
+];
+function corrupt(i){
+  if(i===0){ screen(BOX(CORRUPT[0],'','접수 완료','cbox')); }
+  else{
+    const b=$('#cbox');
+    b.textContent=CORRUPT[i];
+    b.classList.add('corrupt');
+    if(i===2)b.classList.add('warn');
+  }
+  if(i<2) setTimeout(()=>corrupt(i+1),1500);
+  else setTimeout(breakdown,1500);
+}
+function breakdown(){
+  $('#stage').classList.add('breaking');
+  setTimeout(()=>{
+    $('#stage').classList.remove('breaking');
+    try{localStorage.setItem('te_crash','1');}catch(e){}
+    $('#crash').innerHTML=
+      '<div class="box"><h1>이 페이지에 문제가 발생했습니다.</h1>'+
+      '<div class="code">ERR_OBSERVER_DISCONNECTED</div>'+
+      '<button id="rl">새로고침</button></div>'+
+      '<div class="foot">관찰자 연결이 끊어졌습니다. 대상은 계속됩니다.</div>';
+    $('#crash').style.display='block';
+    $('#rl').onclick=()=>location.reload();
+  },800);
+}
+
+/* ---------- 재입장 ---------- */
+function reentry(){
+  noise(3000,['재연결 시도','실패','…누구세요?'],freeWorld);
+}
+function freeWorld(){
+  screen(
+    P('기상통제국 말단 사무실. 같은 자리.\n…같은 자리인 건 이제 익숙한데.')+
+    P('뭔가 이상하다. 뭐가 이상한지를 못 짚겠어서 더 이상하다.')+
+    P('동료가 당신 책상 옆을 지나간다.\n"저기—" 하고 불러 본다.\n지나간다. 무시가 아니다. 무시는 들은 사람이 하는 거다.\n이건… 뭐지?')+
+    P('15시. 비가 집행된다.\n우산 없이 나가 본다. 비는 당신을 적신다. 몸은 있다는 얘기다.\n젖은 채로 서서 생각한다. 몸은 있는데, 왜 아무도—')+
+    P('손목 단말이 통금을 알린다. 순찰이 당신 앞을 지나간다. 세우지 않는다.\n문서고 앞을 지난다. 잠겨 있어야 할 문이 열려 있다.\n들어가도 되나? 되는 건가? 누구한테 물어보지?\n…물어볼 사람이, 없구나.')+
+    P('이게 자유인가?\n자유라는 게 원래 이렇게… 조용한 건가?')+
+    BTN('도시 가장자리로 간다','edge'),
+    '<span class="l"><b>회차 ▩▩▩</b> · 기상통제국</span><span class="r"><span class="slot">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tip">(…원래 여기, 뭐가 있지 않았나?)</span></span></span>'
+  );
+  $('#edge').onclick=()=>{
+    screen(
+      P('도시 가장자리.\n여기서부터는, 아직 렌더링되지 않았습니다.','q')+
+      P('(프로토타입 끝)','q')+
+      BTN('처음으로','n','ghost'),
+      '<span class="l"><b>회차 ▩▩▩</b></span><span class="r"></span>'
+    );
+    $('#n').onclick=()=>{coldOpen();};
+  };
+}
+
+/* ---------- 부팅 ---------- */
+(function boot(){
+  let crashed=false;
+  try{ crashed=localStorage.getItem('te_crash')==='1'; localStorage.removeItem('te_crash'); }catch(e){}
+  if(crashed) reentry();
+  else coldOpen();
+})();
+</script>
+</body>
+</html>
