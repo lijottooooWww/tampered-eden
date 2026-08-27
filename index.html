@@ -333,7 +333,8 @@ function glitchCut(done){
     if(SV.revealReady){ SV.revealReady=false; SV.revealed=true; SV.echo=true; save();
       flashText('회차 125','big',800,done); return; }
     if(SV.stage>=3 && Math.random()<0.4){
-      flashText('기억 완화 적용률 저하. 원인 불명.','frag',220,done); return; }
+      const soft='기억 완화 적용률 저하. 원인 불명.';
+      flashText(soft,'frag',Math.min(300,120+soft.length*7),done); return; }
     if(SV.stage>=1){ fragFlash(done); return; }
     bk.style.display='block';
     setTimeout(()=>{ bk.style.display='none'; done&&done(); },160);
@@ -471,6 +472,7 @@ function recordsScreen(back){
     '<div class="ledgergrid">'+led+'</div>'+
     '<div class="lbl" style="margin-top:14px">수신 단편 — '+SV.seenFrags.length+' / '+FRAGS.length+' <span style="opacity:.6">(정정 사이, 스치는 것들)</span></div></div>'+
     (verKinds>0?P('세 번 본 것에는 줄이 생긴다. 줄이 생긴 장부는, 부정하기 어렵다.\n…마지막 칸은 칸만 있고, 항목이 처음부터 없다.','q'):'')+
+    (SV.stage>=4&&seenKinds<LEDGER_NAMES.length?P('…▩▩ 칸은, 잊은 눈에만 보인다.','q'):'')+
     BOX(TEASER(),'','LOCKED')+
     (sealOpen?BTN('봉인 기록의 서두를 연다','seal','dim'):'')+
     BTN(back?'돌아간다':'타이틀로','back','ghost'),
@@ -478,15 +480,15 @@ function recordsScreen(back){
   );
   $('#back').onclick=back||title;
   const sl=$('#seal'); if(sl)sl.onclick=()=>sealScreen(back);
-  keys.forEach(k=>{const el=document.querySelector('#v_'+k); if(el)el.onclick=()=>viewEnding(k);});
-  [1,2,3].forEach(n=>{const el=document.querySelector('#f_'+n); if(el)el.onclick=()=>viewFrag(n);});
-  [0,1,2].forEach(i=>{const el=document.querySelector('#t_'+i); if(el)el.onclick=()=>viewTrio(i);});
+  keys.forEach(k=>{const el=document.querySelector('#v_'+k); if(el)el.onclick=()=>viewEnding(k,back);});
+  [1,2,3].forEach(n=>{const el=document.querySelector('#f_'+n); if(el)el.onclick=()=>viewFrag(n,back);});
+  [0,1,2].forEach(i=>{const el=document.querySelector('#t_'+i); if(el)el.onclick=()=>viewTrio(i,back);});
 }
 /* 전 결말 회수 보상 — 봉인 기록의 서두 한 장 */
 function sealScreen(back){
   screen(
     '<div class="title-eyebrow" '+dl()+'>SEALED — PARTIAL</div>'+
-    BOX('감찰 기록 #45890 — 서두 열람\n열람 승인: 전 결말 회수자\n\n제1행: 대상 도시. 이상 없음. 사십 년째, 이상 없음.\n제2행: 금회 감찰관, 종이 수첩 소지. 사유: 불명.\n제3행: ▩▩▩▩▩▩▩▩ — (이 행은 뜯겨 있다)\n\n다음 기록은 소설 『템퍼드 에덴』에서 개봉된다.','','감찰 기록 #45890')+
+    BOX('서두 열람\n열람 승인: 전 결말 회수자\n\n제1행: 대상 도시. 이상 없음. 사십 년째, 이상 없음.\n제2행: 금회 감찰관, 종이 수첩 소지. 사유: 불명.\n제3행: ▩▩▩▩▩▩▩▩ — (이 행은 뜯겨 있다)\n\n다음 기록은 소설 『템퍼드 에덴』에서 개봉된다.\n발급처: lijottoooowww.github.io/tampered-eden','','감찰 기록 #45890')+
     P('세 번째 줄이 뜯겨 있다.\n뜯은 쪽이 위인지 아래인지는, 적혀 있지 않다.','q')+
     BTN('목록으로','back','ghost'),
     '<span class="l"><b>봉인 서두</b></span><span class="r">SEALED</span>'
@@ -500,7 +502,7 @@ function endText(key){
       '마흔 장의 기록. 숫자와 시각과 장소.\n그리고 세지 않은 한 장 — 여백까지 꽉 채워진, 항목 없는 서식.');
   return t;
 }
-function viewEnding(key){
+function viewEnding(key,back){
   screen(
     '<div class="title-eyebrow" '+dl()+'>RECORD ARCHIVE</div>'+
     '<h1 class="title" style="font-size:26px" '+dl()+'>'+ENDINGS[key].t+'</h1>'+
@@ -509,17 +511,17 @@ function viewEnding(key){
     BTN('목록으로','back','ghost'),
     '<span class="l"><b>기록 열람</b></span><span class="r">ARCHIVE</span>'
   );
-  $('#back').onclick=()=>recordsScreen();
+  $('#back').onclick=()=>recordsScreen(back);
 }
-function viewTrio(i){
+function viewTrio(i,back){
   screen(P(TRIO[i])+BTN('목록으로','back','ghost'),
     '<span class="l"><b>기록 열람</b></span><span class="r">SIGHTING</span>');
-  $('#back').onclick=()=>recordsScreen();
+  $('#back').onclick=()=>recordsScreen(back);
 }
-function viewFrag(n){
+function viewFrag(n,back){
   screen(P(MEMFRAGS[n].txt)+BTN('목록으로','back','ghost'),
     '<span class="l"><b>기록 열람</b></span><span class="r">RESIDUAL</span>');
-  $('#back').onclick=()=>recordsScreen();
+  $('#back').onclick=()=>recordsScreen(back);
 }
 
 /* ================================================================
@@ -728,7 +730,10 @@ const JOBS=[
         {l:'"규정 중량입니다"',fx:{},rx:'노인은 더 말하지 않는다.\n규정이라는 말은 어디서나 대화를 끝내는 기능이 있다.'}]},
    {t:'옆 창구 동료가 하품을 씹으며 말한다.\n"박이 또 결근이래. 삼 일째. 사유서도 없이."',
     ch:[{l:'"무슨 일 있대?"',fx:{susp:1},rx:'"몰라. 관리과에 물었더니 그런 직원 없다는 식으로 굴던데."\n동료는 웃었다. 농담으로 만들면 안전해지니까.',},
-        {l:'흘려듣는다',fx:{},rx:'박. 얼굴이 잘 떠오르지 않는다.\n삼 일 전까지는 매일 봤을 텐데.'}]}]},
+        {l:'흘려듣는다',fx:{},rx:'박. 얼굴이 잘 떠오르지 않는다.\n삼 일 전까지는 매일 봤을 텐데.'}]},
+   {t:'마감 후 정산. 오늘 치 배급표 수와 수령인 수가 맞는다.\n딱 맞는다. 매일 딱 맞는다.\n…줄에서 사람이 빠진 걸 본 날에도, 맞았던가?',
+    ch:[{l:'지난주 정산부를 들춰 본다',fx:{susp:1},rx:'전부 맞다. 소름 끼치게 맞다.\n숫자가 맞는 것과 세상이 맞는 것이, 같은 말이던가?'},
+        {l:'정산부를 덮는다',fx:{},rx:'맞으면 됐다.\n됐다고 하고, 퇴근한다.'}]}]},
  {id:'patrol',loc:'야간 순찰 2조',
   intro:'야간 순찰 대기실. 벽의 제복이 당신 치수다.\n무전기에서 잡음이 낮게 흐른다.',
   beats:[
@@ -737,7 +742,10 @@ const JOBS=[
         {l:'규정대로 기록한다',fx:{},rx:'이름, 시각, 사유. 학생의 손이 떨렸다.\n서류는 떨림을 기록하는 칸이 없다.'}]},
    {t:'무전 잡음 사이로, 아주 잠깐, 목소리 같은 것이 지나간다.\n"…세고 있…" — 잡음. 다시 정적.',
     ch:[{l:'"방금 무전 누구야?" 되묻는다',fx:{susp:1,expo:1},rx:'"아무도 송신 안 했는데요." 2조 전원이 서로를 본다.\n잡음이었겠지. 잡음이 말을 할 리가.'},
-        {l:'못 들은 걸로 한다',fx:{stab:-1},rx:'잡음이었다. 잡음이었을 것이다.\n그날 밤 순찰 루트가 평소보다 길게 느껴졌다.'}]}]},
+        {l:'못 들은 걸로 한다',fx:{stab:-1},rx:'잡음이었다. 잡음이었을 것이다.\n그날 밤 순찰 루트가 평소보다 길게 느껴졌다.'}]},
+   {t:'통금 순찰 루트, 마지막 구간.\n어느 집 창문 하나에 불이 늦게까지 남아 있다.\n규정상, 소등 위반은 기록 대상이다.',
+    ch:[{l:'기록하지 않고 지나간다',fx:{stab:1,expo:1},rx:'불빛 하나쯤은, 남아 있는 도시가 낫다.\n…이 생각도, 기록 대상일까.'},
+        {l:'규정대로 기록한다',fx:{},rx:'주소, 시각. 사유란은 비워 둔다.\n사유는 저 집 사람 것이지, 당신 것이 아니라서.'}]}]},
  {id:'weather',loc:'기상통제국 말단',
   intro:'기상통제국 말단 사무실. 창밖 하늘은 오늘 자 공지의 색이다.\n15시 강우 예정. 예정이라는 말이 이 도시에선 약속이다.',
   beats:[
@@ -746,7 +754,10 @@ const JOBS=[
         {l:'그대로 두고 사본을 챙긴다',fx:{susp:1},rx:'사본을 접어 넣었다. 뭘 위해서인지는 모르겠다.\n증거라는 단어는 아직 쓰지 않기로 한다.'}]},
    {t:'옆자리 동료가 말을 걸다가 멈춘다.\n"어제 그 서류—" …그리고 당신 얼굴을 본다.\n"…실례했습니다. 다른 분이랑 착각했네요."',
     ch:[{l:'"누구랑 착각하셨는데요?"',fx:{susp:1},rx:'동료가 잠깐 허공을 본다.\n"…이상하네. 방금까지 이름이 있었는데."'},
-        {l:'웃어넘긴다',fx:{stab:-1},rx:'착각이겠지.\n그런데 왜 이쪽 가슴이 내려앉지.'}]}]},
+        {l:'웃어넘긴다',fx:{stab:-1},rx:'착각이겠지.\n그런데 왜 이쪽 가슴이 내려앉지.'}]},
+   {t:'명일 강우 공지문 초안이 내려왔다.\n"15:00 강우 예정. 우산을 지참하십시오."\n어제 것과 글자 하나 다르지 않다. 결재 도장만 새것이다.',
+    ch:[{l:'도장 날짜를 확인해 본다',fx:{susp:1},rx:'날짜는 매일 다르다. 문장은 매일 같다.\n바뀌는 것이 날짜뿐인 문서를, 문서라고 부르나?'},
+        {l:'게시판에 붙인다',fx:{},rx:'붙였다. 지나가는 사람들은 읽지 않는다.\n읽지 않아도 아는 문장이라서.'}]}]},
  {id:'plant',loc:'제7정수장 계기판실',
   intro:'제7정수장 계기판실. 바늘 스물네 개가 일제히 미세하게 떨고 있다.\n당신 자리 책상에는 어제 자 인계 일지가 펼쳐져 있다. 당신의 필적으로.',
   beats:[
@@ -755,7 +766,10 @@ const JOBS=[
         {l:'시각과 함께 기록해 둔다',fx:{susp:1},rx:'"14:52, 23번 유량계 0 지시, 경보 무응답."\n적고 나니 문장이 신고서처럼 생겼다.'}]},
    {t:'밸브 점검은 단독 작업이다. 지하 통로는 당신 발소리만 두 배로 울린다.\n…두 배?',
     ch:[{l:'멈춰 서서 귀를 기울인다',fx:{susp:1,stab:-1},rx:'발소리도 반 박자 늦게 멈춘다.\n메아리다. 메아리는 원래 반 박자 늦는다. 원래 그렇다. 원래.'},
-        {l:'걸음을 빨리한다',fx:{stab:-1},rx:'점검을 마치고 올라오는 계단이 유난히 길었다.\n세지 않으려고 했는데, 마흔둘이었다.'}]}]},
+        {l:'걸음을 빨리한다',fx:{stab:-1},rx:'점검을 마치고 올라오는 계단이 유난히 길었다.\n세지 않으려고 했는데, 마흔둘이었다.'}]},
+   {t:'수질 일지의 어제 칸에, 당신이 쓴 기억 없는 숫자가 적혀 있다.\n당신 필적으로.',
+    ch:[{l:'그 숫자를 오늘 값과 대조한다',fx:{susp:1},rx:'같다. 소수점까지.\n어제의 나는, 오늘 값을 알고 있었나.'},
+        {l:'못 본 걸로 한다',fx:{stab:-1},rx:'일지를 덮었다.\n덮는 손이, 익숙하게 움직였다.'}]}]},
  {id:'archive',loc:'기록보관소 야간',
   intro:'기록보관소 야간 근무. 서가 사이 통로는 도시에서 제일 조용한 장소다.\n조용한 곳에서는 종이 넘어가는 소리도 사건이 된다.',
   beats:[
@@ -764,7 +778,10 @@ const JOBS=[
         {l:'대출 대장을 거슬러 찾아본다',fx:{susp:1,expo:1},rx:'석 달 치를 넘겼다. 없다.\n빌린 적 없는 것이 돌아온다면, 어디에서 돌아오는 걸까.'}]},
    {t:'서가 저쪽에서 발소리. 야간 근무자는 당신 하나다.\n발소리는 세 걸음 걷고, 멈춘다.',
     ch:[{l:'"누구 계세요?" 소리 내 본다',fx:{stab:-1},rx:'대답 대신, 형광등 하나가 깜빡였다.'},
-        {l:'자리로 돌아와 라디오를 켠다',fx:{stab:1},rx:'심야 방송이 잡음 섞여 흐른다.\n사람 목소리라는 게 이렇게 고마운 물건이었나.'}]}]}
+        {l:'자리로 돌아와 라디오를 켠다',fx:{stab:1},rx:'심야 방송이 잡음 섞여 흐른다.\n사람 목소리라는 게 이렇게 고마운 물건이었나.'}]},
+   {t:'폐기 목록이 내려왔다. 서류철 서른 권.\n목록 맨 아래 한 줄 — "사유: 보존 가치 없음."\n서른 권의 사유가, 한 줄이다.',
+    ch:[{l:'한 권을 몰래 빼돌린다',fx:{susp:1,expo:1},rx:'아무 권이나 뺐다. 내용은 안 봤다.\n남긴다는 행위가 먼저였다. 내용은, 나중 일이다.'},
+        {l:'목록대로 폐기한다',fx:{stab:-1},rx:'파쇄기는 성실하다.\n서른 권 분량의 조용함이, 방에 남았다.'}]}]}
 ];
 const INCIDENTS=[
  {t:'퇴근길 골목. 앞서 걷던 사람이 어귀를 돌아 나간다.\n그리고 잠깐 뒤에 — 같은 사람이, 같은 어귀에서, 다시 걸어 나온다.\n같은 옷. 같은 보폭. 같은 순서로 주머니에 손을 넣는 것까지.'},
@@ -801,16 +818,20 @@ const CLAIMS=[
  {t:'민원 — 중년 여자.\n서식을 앞에 두고, 칸을 채우지 못하고 있다.\n"동생이 있었어요. 서류에는 없고요.\n…이런 건, 몇 번 항목인가요?"\n정정 사유 예시를 훑는다. 착시. 피로. 광학 현상.\n없는 사람을 잃은 슬픔은, 몇 번 항목도 아니다.',
   ch:[{l:'"해당 항목이 없습니다" — 서식대로',fx:{},rx:'여자는 천천히 고개를 끄덕이고, 빈 서식을 그대로 두고 갔다.\n접수되지 않은 슬픔은 통계에 잡히지 않는다.\n통계에 없는 것은, 이 도시에서는, 없는 것이다.'},
       {l:'"항목이 없으면, 여백에 적으세요"',fx:{susp:1,expo:1},flag:'marginKept',rx:'규정에 없는 안내였다. 여자는 여백을 꽉 채워 적었다.\n정식 접수는 되지 않는다. 당신은 그 서식을 서랍 제일 안쪽에 넣었다.\n서랍에도, 여백은 있다.'}],
-  t2:'민원 — 그 여자다. 중년, 서식 앞.\n"…저번에도 왔었나요? 온 것 같은데, 기록이 없다고 해서요."\n서식은 여전히 비어 있다. 항목도 여전히 없다.\n슬픔은 접수되지 않았고, 그래서, 소진되지도 않았다.'},
+  t2:'민원 — 그 여자다. 중년, 서식 앞.\n"…저번에도 왔었나요? 온 것 같은데, 기록이 없다고 해서요."\n서식은 여전히 비어 있다. 항목도 여전히 없다.\n슬픔은 접수되지 않았고, 그래서, 소진되지도 않았다.',
+  ch2:[{l:'"해당 항목이, 아직 없습니다"',fx:{},rx:'여자는 이번에도 고개를 끄덕였다.\n끄덕임이, 지난번보다 느렸다.\n항목은 생기지 않는다. 슬픔만 다시 온다.'},
+       {l:'서랍을 열어 보인다',fx:{susp:1},rx:'여백까지 꽉 찬 서식이, 거기 있다.\n여자는 오래 들여다보았다.\n"…있네요. 여기엔, 있네요."'}]},
  {t:'민원 — 남자. 목소리가 먼저 들어온다.\n"배급이 줄었잖아! 누가 정했어! 나와서 설명하라고!"\n당신 손이 먼저 서랍에서 이의 신청 서식을 꺼낸다.\n분노에는 분노용 서식이 있다.\n이 도시는 화내는 방법까지 인쇄해 둔다.',
   ch:[{l:'서식을 내민다',fx:{},rx:'남자는 서식을 받아 들고, 칸을 채우는 동안 조용해졌다.\n다 쓴 얼굴은 들어올 때보다 평온했다.\n화가 풀린 게 아니다. 화가 접수된 것이다.\n편리하다는 생각과 무섭다는 생각이, 같은 자리에서 났다.'},
       {l:'"설명은… 저도 못 듣습니다"',fx:{susp:1},rx:'정직이 먼저 튀어나왔다. 남자가 멈칫한다.\n"…댁도 모르고 찍는 거요? 그 도장."\n당신은 답 대신 서식을 내밀었다.\n서식은 답을 요구하지 않아서, 편하다.'}],
-  t2:'민원 — 그 목소리다.\n"배급이 줄었잖아! 누가—"\n남자가 멈춘다. "…내가 이 얘길, 전에도 했나?"\n이의 신청 서식은 이미 당신 손에 나와 있다.\n손이, 먼저 기억하고 있었다.'},
+  t2:'민원 — 그 목소리다.\n"배급이 줄었잖아! 누가—"\n남자가 멈춘다. "…내가 이 얘길, 전에도 했나?"\n이의 신청 서식은 이미 당신 손에 나와 있다.\n손이, 먼저 기억하고 있었다.',
+  ch2:[{l:'서식을 내민다',fx:{},rx:'멈칫했던 남자는, 서식을 받아 들자 마저 화를 냈다.\n칸이 화를 받아 낸다. 지난번처럼. 아마, 다음번처럼.'},
+       {l:'"전에도, 오셨습니다"',fx:{susp:1},rx:'남자가 당신을 본다. 화가 가라앉은 자리에 다른 것이 고인다.\n"…그래요? 나는 왜, 기억이 안 나지."\n서식은 그날, 반쯤 비워진 채 접수되었다.'}]},
  {t:'민원 — 노인.\n"수요일이 없었어. 화요일 밤에 잤는데 목요일 아침이었다니까.\n달력도 넘어가 있고, 배급 기록도 있어. 내가 받았다는 수요일 치가."\n서류상 노인의 수요일은 완벽하다.\n본인만 빼고, 전부 출석한 하루.',
   ch:[{l:'착오 확인 도장을 찍는다',th:1,fx:{},rx:'쾅.\n사유란 "고령"에 동그라미를 쳤다. 노인은 서류를 받아 들고 중얼거렸다.\n"…그래. 하루쯤이야."\n하루쯤. 당신은 그 말을 퇴근길 내내 데리고 걸었다.'},
       {l:'"그 수요일에, 기억나는 게 하나라도 있습니까"',fx:{susp:1},rx:'노인은 오래 생각했다.\n"…빗소리. 오후에. 그건 기억나."\n수요일 15시, 강우 집행 기록은 정상.\n기억에 없는 하루에도, 비는 시간을 지켰다.'}],
   t2:'민원 — 노인.\n"이번엔 금요일이야. 금요일이 없었어."\n요일이 바뀌었다. 확신은 그대로다.\n서류상 노인의 금요일도, 완벽하다.',
-  ch2:[{l:'착오 확인 도장을 찍는다',th:1,fx:{},rx:'쾅.\n사유란 "고령"에 두 번째 동그라미를 쳤다.\n노인은 서류를 받아 들고, 이번에는 아무 말도 하지 않았다.\n하루가 또, 서류 쪽이 맞는 것으로 정리되었다.'},
+  ch2:[{l:'착오 확인 도장을 찍는다',th:1,fx:{},rx:'쾅.\n사유란 "고령"에, 동그라미가 하나 더 앉았다.\n노인은 서류를 받아 들고, 이번에는 아무 말도 하지 않았다.\n하루가 또, 서류 쪽이 맞는 것으로 정리되었다.'},
        {l:'"그 금요일에, 기억나는 게 하나라도 있습니까"',fx:{susp:1},rx:'노인은 이번엔 오래 생각하지 않았다.\n"…빗소리. 또, 빗소리야."\n금요일 15시, 강우 집행 기록은 정상.\n없어진 요일마다, 비만 남는다.'}]},
  {t:'민원 — 젊은 남자. 사유란이 이상하다.\n"매주 목요일에 양초를 삽니다. 쓰지도 않아요. 서랍에 마흔 개 있어요.\n이게… 정정되는 항목인가요? 제가 이상한 건가요?"\n습관은 이상 현상이 아니다.\n그런데 이 남자는, 자기 손이 무섭다는 얼굴을 하고 있다.',
   ch:[{l:'"이상 아닙니다" — 반려한다',fx:{},rx:'남자는 안심하지 못한 채 돌아갔다.\n습관에는 이유가 있어야 한다.\n이유만 지워진 습관은, 그럼, 뭐라고 부르나.'},
@@ -847,11 +868,21 @@ function corrJob(){
     if(!(seen&&c.t2))return {t:c.t,ch:c.ch,ci:idx};
     let t=c.t2;
     if(idx===0&&SV.marginKept)t+='\n서랍 제일 안쪽에는, 그 서식이 아직 있다.\n여백까지 꽉 찬 채로.';
-    return {t:t,ch:c.ch2||c.ch,ci:idx};
+    let ch=c.ch2||c.ch;
+    /* 유족 재방문: 서랍이 비어 있으면 '보여줄' 수 없다 — 여백 안내로 폴백 */
+    if(idx===0&&c.ch2)ch=[c.ch2[0], SV.marginKept?c.ch2[1]:c.ch[1]];
+    return {t:t,ch:ch,ci:idx};
   };
   const beats=[mk(a),mk(b)];
   save();
   return {id:'correct',loc:'시민민원국 정정과',intro:intro,beats:beats};
+}
+/* 직업 비트 3종 풀에서 회차마다 2개 — 같은 자리, 조금 다른 하루 */
+function jobWith(j){
+  if(j.beats.length<=2)return j;
+  const bs=j.beats.slice();
+  bs.splice(Math.floor(Math.random()*bs.length),1);
+  return {id:j.id,loc:j.loc,intro:j.intro,beats:bs};
 }
 function pickJob(){
   SV.lastJobs=SV.lastJobs||[];
@@ -859,7 +890,7 @@ function pickJob(){
   const pool=ids.filter(id=>!SV.lastJobs.includes(id));
   const id=pool.length?pick(pool):pick(ids);
   SV.lastJobs.push(id); if(SV.lastJobs.length>2)SV.lastJobs.shift(); save();
-  return id==='correct'?corrJob():JOBS.find(j=>j.id===id);
+  return id==='correct'?corrJob():jobWith(JOBS.find(j=>j.id===id));
 }
 function pickInc(){
   SV.lastIncs=SV.lastIncs||[];
@@ -1143,7 +1174,7 @@ function hubMorning(){
   let saltLine='';
   if(SV.warmSeen.includes(0)&&!SV.saltBack&&Math.random()<0.35){
     SV.saltBack=true; save();
-    saltLine=P('문 앞에 종지가 놓여 있었다. 소금이, 꾹꾹 눌러 담겨서.\n쪽지는 없다.\n…쪽지가 필요한 일이 아니라서일 것이다.');
+    saltLine=P('문 앞에 종지가 놓여 있다. 소금이, 꾹꾹 눌러 담겨 있다.\n쪽지는 없다.\n…쪽지가 필요한 일이 아니라서일 것이다.');
   }
   const acts=[];
   acts.push(BTN('신고한다 — 몇 번이든','act_report','danger'));
