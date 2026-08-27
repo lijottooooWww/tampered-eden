@@ -236,7 +236,7 @@ function load(){
     reports:0,records:0,bowed:0,foundTraces:false,betrayUnlocked:false,revealReady:false,
     trio:0,endings:[],frags:[],traces:[],ignored:0,
     readTraces:[],warmSeen:[],corrVisits:0,lastClaims:[],scribeSeen:false,scribeNote:false,ledgerS:[],ledgerF:[],
-    seenFrags:[],claimsSeen:[],marginKept:false,recordGone:false};
+    seenFrags:[],claimsSeen:[],marginKept:false,recordGone:false,saltBack:false};
   try{return Object.assign(d,JSON.parse(localStorage.getItem(SKEY))||{});}catch(e){return d;}
 }
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(SV));}catch(e){}}
@@ -318,7 +318,9 @@ function delayOrTap(ms,fn){
 
 /* ---------- 리셋 컷 ---------- */
 function fragFlash(done){
-  const i=Math.floor(Math.random()*FRAGS.length);
+  /* 미독 우선 — 스치는 것들도 결국 전부 스친다 */
+  const unread=FRAGS.map((_,x)=>x).filter(x=>!SV.seenFrags.includes(x));
+  const i=unread.length?unread[Math.floor(Math.random()*unread.length)]:Math.floor(Math.random()*FRAGS.length);
   if(!SV.seenFrags.includes(i)){SV.seenFrags.push(i);save();}
   const t=FRAGS[i];
   flashText(t,'frag',Math.min(300,120+t.length*7),done);
@@ -375,7 +377,7 @@ function coldOpen(){
   $('#screen').innerHTML='<div class="sysbox" style="animation:none;opacity:1;margin-top:18vh">'+
     '감찰 기록 #45764\n관리 구역 : 이상 없음\n회차 : 001</div>'+
     (scar>0?'<p class="ln q" style="animation:none;opacity:.55;margin-top:14px">…또 지웠구나.</p>':'');
-  setTimeout(title,900);
+  setTimeout(title,1300);
 }
 const ENDINGS={
   wall:{t:'벽지',s:'승진\n예정'},
@@ -404,7 +406,7 @@ function title(){
     '<span class="l"><b>TAMPERED EDEN</b></span><span class="r">시즌 0</span>'
   );
   $('#st').onclick=()=>{ SV.tut ? (SV.stage>=4?hubMorning():runMorning()) : morning1(); };
-  const eb=$('#endbook'); if(eb)eb.onclick=recordsScreen;
+  const eb=$('#endbook'); if(eb)eb.onclick=()=>recordsScreen();
   const w=$('#wipe');
   if(w)w.onclick=()=>{
     if(w.dataset.arm){ try{
@@ -427,8 +429,9 @@ function TEASER(){
     ? '감찰 기록 #45890 — 봉인\n열람 자격: 전 결말 회수 확인.\n비고: 담당자 승진 예정.\n다음 감찰 기록은 소설 『템퍼드 에덴』에서 개봉된다. (공개 준비 중)'
     : '감찰 기록 #45890 — 봉인\n다음 감찰 기록은 소설 『템퍼드 에덴』에서 개봉된다. (공개 준비 중)')+tail;
 }
-function recordsScreen(){
+function recordsScreen(back){
   const got=SV.endings, keys=Object.keys(ENDINGS);
+  const sealOpen=SV.endings.length>=Object.keys(ENDINGS).length&&SV.frags.length>=3;
   let slots='';
   for(const k of keys){
     const g=got.includes(k);
@@ -469,13 +472,26 @@ function recordsScreen(){
     '<div class="lbl" style="margin-top:14px">수신 단편 — '+SV.seenFrags.length+' / '+FRAGS.length+' <span style="opacity:.6">(정정 사이, 스치는 것들)</span></div></div>'+
     (verKinds>0?P('세 번 본 것에는 줄이 생긴다. 줄이 생긴 장부는, 부정하기 어렵다.\n…마지막 칸은 칸만 있고, 항목이 처음부터 없다.','q'):'')+
     BOX(TEASER(),'','LOCKED')+
-    BTN('타이틀로','back','ghost'),
+    (sealOpen?BTN('봉인 기록의 서두를 연다','seal','dim'):'')+
+    BTN(back?'돌아간다':'타이틀로','back','ghost'),
     '<span class="l"><b>기록 열람</b></span><span class="r">ARCHIVE</span>'
   );
-  $('#back').onclick=title;
+  $('#back').onclick=back||title;
+  const sl=$('#seal'); if(sl)sl.onclick=()=>sealScreen(back);
   keys.forEach(k=>{const el=document.querySelector('#v_'+k); if(el)el.onclick=()=>viewEnding(k);});
   [1,2,3].forEach(n=>{const el=document.querySelector('#f_'+n); if(el)el.onclick=()=>viewFrag(n);});
   [0,1,2].forEach(i=>{const el=document.querySelector('#t_'+i); if(el)el.onclick=()=>viewTrio(i);});
+}
+/* 전 결말 회수 보상 — 봉인 기록의 서두 한 장 */
+function sealScreen(back){
+  screen(
+    '<div class="title-eyebrow" '+dl()+'>SEALED — PARTIAL</div>'+
+    BOX('감찰 기록 #45890 — 서두 열람\n열람 승인: 전 결말 회수자\n\n제1행: 대상 도시. 이상 없음. 사십 년째, 이상 없음.\n제2행: 금회 감찰관, 종이 수첩 소지. 사유: 불명.\n제3행: ▩▩▩▩▩▩▩▩ — (이 행은 뜯겨 있다)\n\n다음 기록은 소설 『템퍼드 에덴』에서 개봉된다.','','감찰 기록 #45890')+
+    P('세 번째 줄이 뜯겨 있다.\n뜯은 쪽이 위인지 아래인지는, 적혀 있지 않다.','q')+
+    BTN('목록으로','back','ghost'),
+    '<span class="l"><b>봉인 서두</b></span><span class="r">SEALED</span>'
+  );
+  $('#back').onclick=()=>recordsScreen(back);
 }
 function endText(key){
   let t=ENDTXT[key];
@@ -493,17 +509,17 @@ function viewEnding(key){
     BTN('목록으로','back','ghost'),
     '<span class="l"><b>기록 열람</b></span><span class="r">ARCHIVE</span>'
   );
-  $('#back').onclick=recordsScreen;
+  $('#back').onclick=()=>recordsScreen();
 }
 function viewTrio(i){
   screen(P(TRIO[i])+BTN('목록으로','back','ghost'),
     '<span class="l"><b>기록 열람</b></span><span class="r">SIGHTING</span>');
-  $('#back').onclick=recordsScreen;
+  $('#back').onclick=()=>recordsScreen();
 }
 function viewFrag(n){
   screen(P(MEMFRAGS[n].txt)+BTN('목록으로','back','ghost'),
     '<span class="l"><b>기록 열람</b></span><span class="r">RESIDUAL</span>');
-  $('#back').onclick=recordsScreen;
+  $('#back').onclick=()=>recordsScreen();
 }
 
 /* ================================================================
@@ -543,7 +559,7 @@ function stampFlow(afterFn){
   const b=$('#stampBtn');
   b.onclick=()=>{
     thud();
-    const a=$('#ask'); if(a){a.disabled=true; a.style.opacity=.3; a.onclick=null;}
+    ['ask','rec'].forEach(id=>{const el=$('#'+id); if(el){el.disabled=true; el.style.opacity=.3; el.onclick=null;}});
     $('#doc').classList.add('stamped');
     b.disabled=true; b.style.opacity=.3;
     setTimeout(afterFn,900);
@@ -759,7 +775,7 @@ const INCIDENTS=[
  {t:'방금 장부에 적은 줄이 없다.\n잉크가 마를 시간도 없었는데, 종이는 처음부터 빈 줄이었다는 얼굴을 하고 있다.\n펜을 쥔 손에는 쓴 기억이 아직 남아 있다.'},
  {t:'퇴근 전 점호. 구역 명부와 실제 인원이 정확히 맞는다.\n어제도 맞았다. 그저께도 맞았다.\n…그저께, 줄에서 사람이 하나 접히듯 사라지는 걸 봤는데.\n명부는 한 번도 틀린 적 없다는 얼굴을 하고 있다.\n장부가 맞는다. 세상이 장부 쪽으로 맞춰지고 있다면 — 장부는 앞으로도 계속 맞을 것이다.'},
  {t:'골목 환기구에서 단내가 올라온다.\n…달콤한, 부드러운, 이름이 혀끝에 걸리는 냄새.\n이 도시 배급 목록에 저런 냄새는 없다. 있어 본 적도 없다.\n없는 것의 냄새가, 어디선가, 아래에서, 올라오고 있다.'},
- {t:'손목 단말이 06시를 알린다.\n…방금 울리지 않았나. 화면을 본다. 06:00.\n시계는 한 번 울렸다는 얼굴을 하고 있다.\n손목에는, 두 번의 진동이 아직 남아 있다.'},
+ {t:'손목 단말이 06시를 알린다.\n…방금 울리지 않았나. 화면을 본다. 06:00.\n시계는 한 번 울렸다는 얼굴을 하고 있다.\n손목에는, 네 번의 진동이 아직 남아 있다.'},
  {t:'퇴근길, 맞은편에서 오던 사람이 당신을 보고 비켜선다.\n지나치고 나서야 깨닫는다 —\n비켜서는 각도가, 당신이 움직이기 전에 나왔다.\n당신이 어느 쪽으로 갈지, 그 사람은 먼저 알고 있었다.'}
 ];
 const LEDGER_NAMES=['같은 사람이 두 번','기둥 없는 그림자','마른 유리 한 장','접힌 사람','벤치가 없던 날','지워진 한 줄','맞는 명부','없는 것의 냄새','두 번 운 알람','먼저 비킨 사람'];
@@ -776,7 +792,7 @@ const TRACES_PRESET=[
 const REPLIES=['나도 봤다.','아직 세는 중이다.','혼자 아니다. 그건 확실하다.'];
 /* 온기 비트 — 스탯 0. 아무 일도 일어나지 않는 것이 일어나는 일이다. */
 const WARMTH=[
-'복도에서 옆집 사람이 종지를 들고 서 있다.\n"소금 좀… 반 줌만요. 내일 배급 받아서 갚을게요."\n당신은 소금을 덜어 준다. 종지가 오가는 동안 아무 일도 일어나지 않는다.\n아무 일도 일어나지 않는 십오 초였다.\n이 도시에서 제일 귀한 십오 초일지도 모른다.',
+'', /* 소금 비트는 선택지 연출(warmScene i===0)로 대체 — 이 칸은 인덱스 보존용 */
 '야근 끝. 골목 어귀 노점에서 국수 김이 올라온다.\n주인이 그릇을 내밀며 면을 한 젓가락 더 얹는다.\n"많이 늦으셨네." 그게 다다.\n국물이 뜨겁다. 뜨겁다는 감각에는, 아무 이상이 없다.',
 '창턱에 못 보던 화분이 있다. 옆집 노인이 물을 주고 있다.\n"자리가 없어서. 볕은 이쪽이 좋아서요."\n허가받았을 리 없는 화분이다. 잎이 두 장, 오늘 아침에 새로 났다.\n당신은 신고 서식을 떠올리지 않았다.\n떠올리지 않았다는 것을, 나중에야 알았다.'
 ];
@@ -793,11 +809,15 @@ const CLAIMS=[
  {t:'민원 — 노인.\n"수요일이 없었어. 화요일 밤에 잤는데 목요일 아침이었다니까.\n달력도 넘어가 있고, 배급 기록도 있어. 내가 받았다는 수요일 치가."\n서류상 노인의 수요일은 완벽하다.\n본인만 빼고, 전부 출석한 하루.',
   ch:[{l:'착오 확인 도장을 찍는다',th:1,fx:{},rx:'쾅.\n사유란 "고령"에 동그라미를 쳤다. 노인은 서류를 받아 들고 중얼거렸다.\n"…그래. 하루쯤이야."\n하루쯤. 당신은 그 말을 퇴근길 내내 데리고 걸었다.'},
       {l:'"그 수요일에, 기억나는 게 하나라도 있습니까"',fx:{susp:1},rx:'노인은 오래 생각했다.\n"…빗소리. 오후에. 그건 기억나."\n수요일 15시, 강우 집행 기록은 정상.\n기억에 없는 하루에도, 비는 시간을 지켰다.'}],
-  t2:'민원 — 노인.\n"이번엔 금요일이야. 금요일이 없었어."\n요일이 바뀌었다. 확신은 그대로다.\n서류상 노인의 금요일도, 완벽하다.'},
+  t2:'민원 — 노인.\n"이번엔 금요일이야. 금요일이 없었어."\n요일이 바뀌었다. 확신은 그대로다.\n서류상 노인의 금요일도, 완벽하다.',
+  ch2:[{l:'착오 확인 도장을 찍는다',th:1,fx:{},rx:'쾅.\n사유란 "고령"에 두 번째 동그라미를 쳤다.\n노인은 서류를 받아 들고, 이번에는 아무 말도 하지 않았다.\n하루가 또, 서류 쪽이 맞는 것으로 정리되었다.'},
+       {l:'"그 금요일에, 기억나는 게 하나라도 있습니까"',fx:{susp:1},rx:'노인은 이번엔 오래 생각하지 않았다.\n"…빗소리. 또, 빗소리야."\n금요일 15시, 강우 집행 기록은 정상.\n없어진 요일마다, 비만 남는다.'}]},
  {t:'민원 — 젊은 남자. 사유란이 이상하다.\n"매주 목요일에 양초를 삽니다. 쓰지도 않아요. 서랍에 마흔 개 있어요.\n이게… 정정되는 항목인가요? 제가 이상한 건가요?"\n습관은 이상 현상이 아니다.\n그런데 이 남자는, 자기 손이 무섭다는 얼굴을 하고 있다.',
   ch:[{l:'"이상 아닙니다" — 반려한다',fx:{},rx:'남자는 안심하지 못한 채 돌아갔다.\n습관에는 이유가 있어야 한다.\n이유만 지워진 습관은, 그럼, 뭐라고 부르나.'},
       {l:'"목요일에, 원래 무슨 일이 있었습니까"',fx:{susp:1},rx:'"…모르겠어요. 그런데 방금, 잠깐 —\n촛불 앞에 누가 앉아 있는 그림이 지나갔어요. 얼굴은 안 보이고."\n남자는 제 말에 제가 놀라서, 서식을 두고 도망치듯 나갔다.'}],
-  t2:'민원 — 양초 남자.\n"하나가 또 늘었어요. 세는 걸, 그만둘 수가 없어요."\n남자는 이제 서식보다 당신 얼굴을 본다.\n동류를 찾는 눈으로.'}
+  t2:'민원 — 양초 남자.\n"하나가 또 늘었어요. 세는 걸, 그만둘 수가 없어요."\n남자는 이제 서식보다 당신 얼굴을 본다.\n동류를 찾는 눈으로.',
+  ch2:[{l:'"이상 아닙니다" — 반려한다',fx:{},rx:'남자는 이번에는 바로 일어서지 않았다.\n"…이상이 아니면, 왜 자꾸 늘어나요?"\n당신은 답하지 않았다. 답이 없어서.'},
+       {l:'"세는 걸, 언제부터 멈출 수 없게 됐습니까"',fx:{susp:1},rx:'"…모르겠어요. 어느 날부터, 안 세면 불안해서요."\n남자는 서랍 얘기를 하다 말고, 당신을 보았다.\n"…당신도, 뭘 세고 있죠?"'}]}
 ];
 function fx(o){ if(!o)return;
   if(o.susp)SV.susp=Math.max(0,SV.susp+o.susp);
@@ -819,12 +839,15 @@ function corrJob(){
   const a=pool.splice(Math.floor(Math.random()*pool.length),1)[0];
   const b=pool[Math.floor(Math.random()*pool.length)];
   SV.lastClaims=[a,b];
-  /* 재방문 민원은 변주 텍스트로 — 같은 사람이, 조금 어긋난 채로 돌아온다 */
+  /* 재방문 민원은 변주 텍스트로 — 같은 사람이, 조금 어긋난 채로 돌아온다.
+     기독 마킹은 비트가 실제 렌더될 때(beat) 찍는다 — 배정만 하고 이탈한 회차는 초회로 남는다 */
   const mk=idx=>{
     const c=CLAIMS[idx];
     const seen=SV.claimsSeen.includes(idx);
-    if(!seen)SV.claimsSeen.push(idx);
-    return (seen&&c.t2)?{t:c.t2,ch:c.ch}:c;
+    if(!(seen&&c.t2))return {t:c.t,ch:c.ch,ci:idx};
+    let t=c.t2;
+    if(idx===0&&SV.marginKept)t+='\n서랍 제일 안쪽에는, 그 서식이 아직 있다.\n여백까지 꽉 찬 채로.';
+    return {t:t,ch:c.ch2||c.ch,ci:idx};
   };
   const beats=[mk(a),mk(b)];
   save();
@@ -857,6 +880,12 @@ function runMorning(){
     P('주머니에 손을 넣는다. 접힌 메모지가 만져진다.\n꺼내 보면 비어 있다. 비어 있는 종이가 왜 접혀 있는 걸까.','q');
   if(SV.echo){ SV.echo=false; save();
     stageLine=P('…방금, 숫자를 봤다. 백이십오.\n백이십오가, 뭐지. 무엇의, 백이십오지.','q'); }
+  /* 소금은 돌아온다 — 기억은 시스템만 하는 게 아니다 */
+  let saltLine='';
+  if(SV.warmSeen.includes(0)&&!SV.saltBack&&Math.random()<0.35){
+    SV.saltBack=true; save();
+    saltLine=P('문 앞에 종지가 놓여 있다. 소금이, 꾹꾹 눌러 담겨 있다.\n쪽지는 없다.\n…쪽지가 필요한 일이 아니라서일 것이다.');
+  }
   let intro='';
   if(SV.stage>=2&&!SV.statIntro){ SV.statIntro=true; save();
     intro=BOX('의심 — 알수록, 열린다.\n안정 — 버티는 힘. 바닥나면 스스로 잊고 싶어진다.\n…측정되지 않는 것이 하나 더 있다. 그쪽은, 당신을 세고 있다.','','자가 진단'); }
@@ -865,6 +894,7 @@ function runMorning(){
   screen(
     P(SV.prog>=2?ALARM_S:ALARM)+
     P('현관 앞, 배급 봉투에서 사과 한 알이 미끄러진다.\n사과는 '+(SV.run%2?'왼쪽':'오른쪽')+'으로 굴러, 문지방 앞에서 멈춘다.')+
+    saltLine+
     P(G.job.intro)+
     intro+stageLine+warn+
     BTN('일과를 시작한다','n')
@@ -894,6 +924,7 @@ function beat(i){
   }
   if(i>=G.job.beats.length){incident();return;}
   const b=G.job.beats[i];
+  if(b.ci!==undefined&&!SV.claimsSeen.includes(b.ci)){SV.claimsSeen.push(b.ci);save();}
   let html=P(b.t);
   b.ch.forEach((c,ci)=>{html+=BTN(c.l,'c'+ci,ci===1?'dim':'');});
   screen(html);
@@ -951,11 +982,11 @@ function belowDoor(){
   );
   $('#say').onclick=()=>{
     G.toldBelow=1;
-    fx({stab:1});
+    fx({stab:1,expo:1});
     screen(
       P('두드리지는 않는다. 대신 문에 대고, 낮게, 본 것을 말한다.\n어디서. 무엇이. 몇 번.')+
       P('문 안쪽은 조용하다.\n다만 — 듣고 있는 조용함이다. 그 차이를, 이제는 안다.')+
-      P('접수증은 없다. 도장도 없다.\n올라오는 계단이, 내려갈 때보다 짧았다.','q')+
+      P('접수증은 없다. 도장도 없다.\n올라오는 계단이, 내려갈 때보다 짧았다.\n…들은 쪽도, 어딘가에 적고 있을까.','q')+
       BTN('다음 날','n'));
     $('#n').onclick=()=>{G.day++;incident();};
   };
@@ -965,11 +996,11 @@ function belowDoor(){
   };
 }
 function loopTerminal(){
-  const extra=
-    SV.stage>=3?'\n\n알림: 반복 민원은 처리가 지연될 수 있습니다.':
-    SV.stage>=2?'\n\n어디선가 본 것 같은 번호다.':'';
+  const pre=
+    SV.stage>=3?'\n화면 아래, 접수하기도 전에 알림이 미리 떠 있다 —\n알림: 반복 민원은 처리가 지연될 수 있습니다.':
+    SV.stage>=2?'\n…서식이, 낯설지 않다.':'';
   screen(
-    P('신고 단말. 가로등 아래.\n화면을 켠다. 서식이 뜬다.'+extra)+
+    P('신고 단말. 가로등 아래.\n화면을 켠다. 서식이 뜬다.'+pre)+
     BTN('접수한다','n')
   );
   $('#n').onclick=()=>{
@@ -993,7 +1024,7 @@ function loopTerminal(){
 
 /* ---------- 잔류 기억 (파편) ---------- */
 const MEMFRAGS={
- 1:{n:'사과',txt:'—잔류 기억—\n\n좁은 골목. 열 살쯤 된 아이가 배수구 앞에 쪼그려 앉아 있다.\n"사과가 없어졌어요."\n어른들이 지나가며 말한다. "배수구로 들어갔겠지."\n"얘야, 물건이 그냥 없어지는 법은 없단다."\n아이는 배수구를 계속 들여다본다.\n눈을 잘 깜빡이지 않는 아이다.'},
+ 1:{n:'사과',txt:'—잔류 기억—\n\n좁은 골목. 열 살쯤 된 아이가 배수구 앞에 쪼그려 앉아 있다.\n"사과가 없어졌어요."\n노점 주인이 말한다. "배수구로 들어갔겠지."\n"얘야, 물건이 그냥 없어지는 법은 없단다."\n아이는 배수구를 계속 들여다본다.\n눈을 잘 깜빡이지 않는 아이다.'},
  2:{n:'전야',txt:'—잔류 기억—\n\n작은 방. 스물넷쯤 된 남자가 가방 하나를 싸고 있다.\n짐이 적다. 갈 곳에는 아무것도 가져갈 수 없다고 들었다.\n"십일 년이래. 안에서는."\n남자는 창밖 잿빛 하늘을 오래 본다.\n무너지지 않을 것 같은 등이다.'},
  3:{n:'수첩',txt:'—잔류 기억—\n\n문구점. 젊은 감찰관이 수첩을 고르고 있다.\n점원이 묻는다. "요즘 다들 단말 쓰시는데."\n"고칠 수 없는 기록이 필요해서."\n감찰관은 방수 종이 수첩을 집는다. 만년필을 세 번 고쳐 쥐고,\n첫 장에 날짜를 적는다.'}
 };
@@ -1043,7 +1074,7 @@ function traceScene(done){
 }
 function replyWall(done){
   G.replied=1;
-  let html=P('이 도시의 벽 글씨는, 이제 전부 읽었다.\n여덟 개의 필적. 전부 답장 없는 편지들.\n주머니의 열쇠가 손에 잡힌다.')+P('무엇을 남길까.','q');
+  let html=P('이 도시의 벽 글씨는, 이제 전부 읽었다.\n벽 여섯 곳, 여덟 개의 필적. 전부 답장 없는 편지들.\n주머니의 열쇠가 손에 잡힌다.')+P('무엇을 남길까.','q');
   REPLIES.forEach((r,i)=>{html+=BTN('"'+r+'"','r'+i);});
   html+=BTN('아무것도 남기지 않는다','r_no','dim');
   screen(html);
@@ -1086,7 +1117,7 @@ function warmScene(done){
     const after=full=>{
       screen(
         P('종지가 오가는 동안 아무 일도 일어나지 않는다.\n아무 일도 일어나지 않는 십오 초였다.\n이 도시에서 제일 귀한 십오 초일지도 모른다.'+
-          (full?'\n…한 줌은, 갚으라는 말을 잊게 만드는 양이다.':''))+
+          (full?'\n…한 줌이면, 갚으라는 말이 잊히려나.':''))+
         BTN('가던 길을 간다','n'));
       $('#n').onclick=done;
     };
@@ -1109,6 +1140,11 @@ function hubMorning(){
   if(!SV.scribeSeen&&Math.random()<0.15){scribeScene(hubMorning);return;}
   if(SV.warmSeen.length<3&&Math.random()<0.12){warmScene(hubMorning);return;}
   G.job={loc:'…같은 자리'}; G.day=1;
+  let saltLine='';
+  if(SV.warmSeen.includes(0)&&!SV.saltBack&&Math.random()<0.35){
+    SV.saltBack=true; save();
+    saltLine=P('문 앞에 종지가 놓여 있었다. 소금이, 꾹꾹 눌러 담겨서.\n쪽지는 없다.\n…쪽지가 필요한 일이 아니라서일 것이다.');
+  }
   const acts=[];
   acts.push(BTN('신고한다 — 몇 번이든','act_report','danger'));
   acts.push(BTN('기록을 모은다'+(SV.records>0?' ('+SV.records+')':''),'act_record'));
@@ -1123,6 +1159,7 @@ function hubMorning(){
     acts.push(BTN('회선이 끊겼던 자리로 간다','act_free','dim'));
   screen(
     P(ALARM_S)+
+    saltLine+
     (SV.expo>=12?P('창밖의 차에서, 오늘은 사람이 내렸다.\n내려서, 올려다본다.','q')
      :SV.expo>=9?P('창밖, 같은 자리에 같은 차가 이틀째 서 있다.','q'):'')+
     P('같은 사무실. 같은 책상. 같은 창밖.\n이제 자리가 바뀌지 않는다. 새 껍데기를 입히는 일조차, 당신에게는 하지 않는 것이다.')+
@@ -1141,15 +1178,23 @@ function hubMorning(){
   const bt=$('#act_betray'); if(bt)bt.onclick=actBetray;
   const fr=$('#act_free'); if(fr)fr.onclick=freeWorld;
 }
-/* 기억하는 자만이 도감을 완성할 수 있다 */
+/* 기억하는 자만이 도감을 완성할 수 있다 — 본 것만 다시 갈 수 있다 */
 function actRevisit(){
-  const i=pickInc();
+  const seenIdx=INCIDENTS.map((_,x)=>x).filter(x=>(SV.ledgerS[x]||0)>0);
+  if(!seenIdx.length){
+    endDay('기억을 더듬는다.\n…어긋났던 자리가, 아직 없다.\n이 눈으로 본 것부터가, 먼저다.',{});
+    return;
+  }
+  const unver=seenIdx.filter(x=>(SV.ledgerS[x]||0)<3);
+  const i=pick(unver.length?unver:seenIdx);
   SV.ledgerS[i]=(SV.ledgerS[i]||0)+1; save();
   screen(
     P('기억을 따라, 어긋났던 자리로 간다.')+
     P(INCIDENTS[i].t)+
-    P((SV.ledgerS[i]>=3
-      ?'세 번째다.\n세 번 본 것을, 이제는 착오라고 부를 수 없다.'
+    P((SV.ledgerS[i]===3
+      ?'세 번째다.\n세 번 본 것을, 착오라고 부를 수 있나.\n…부를 수 없다. 이제는.'
+      :SV.ledgerS[i]>3
+      ?'이제는, 세지 않아도 안다.\n와서 확인하는 일은 습관이라기보다, 인사에 가깝다.'
       :'같은 자리. 같은 어긋남.\n어긋남에도 주소가 있다는 것을, 이제 안다.'),'q')+
     BTN('현장에서 접수한다','rv_rep','danger')+
     BTN('기록만 하고 돌아선다','rv_back','dim')
@@ -1162,7 +1207,7 @@ function actRevisit(){
 }
 function actHide(){
   SV.records=Math.max(0,SV.records-1); save();
-  endDay('기록 한 장을 마루 밑으로 옮겼다.\n보여줄 수 없는 곳의 기록은 반쯤은 없는 기록이다.\n그래도 — 없는 것과 반쯤 없는 것은, 다르다.',{expo:-2});
+  endDay('기록 한 장을 마루 밑으로 옮겼다.\n보여줄 수 없는 곳의 기록이, 그래도 기록이긴 한 걸까.\n…없는 것과 반쯤 없는 것은, 다르다. 다르다고 해 두자.',{expo:-1});
 }
 function endDay(txt,fxo){
   fx(fxo);
@@ -1201,14 +1246,14 @@ function escalate(){
   };
   $('#n').onclick=()=>{
     SV.reports++; SV.totalReports++; fx({susp:1,expo:2});
-    screen(BOX(e.boxx,'','접수 완료'));
+    bumpRun(); save();
+    screen(BOX(e.boxx+(SV.scribeSeen?'\n비고: 수기 병기':''),'','접수 완료'));
     delayOrTap(2000,()=>{
       const st=$('#stage');
       st.classList.add('breaking');
       setTimeout(()=>{
         st.classList.remove('breaking');
-        flashText('정정 #'+(SV.run+1)+' 대기\n'+e.log,'frag',700,()=>{
-          bumpRun(); save();
+        flashText('정정 #'+SV.run+' 대기\n'+e.log,'frag',1000,()=>{
           hubMorning();
         });
       },260);
@@ -1299,7 +1344,7 @@ function freeWorld(){
 function actRecord(){
   SV.records++; save();
   const items=[
-   '가로등 그림자가 없던 자리를 실측했다. 걸음 수, 시각, 광원 각도.\n숫자는 부정할 수 없다. 부정하는 건 사람 몫이다.',
+   '가로등 그림자가 없던 자리를 실측했다. 걸음 수, 시각, 광원 각도.\n숫자는 부정할 수 없다.\n…부정할 수 없는 게 맞나. 부정하는 건, 늘 사람 쪽이었는데.',
    '15시 강우의 개시 시각을 초 단위로 쟀다.\n+2초. 어제는 +1초였다.\n오차가 자라는 건지, 재는 눈이 자라는 건지.',
    '민원 창구 시절 외워 둔 목격담들을 종이에 옮겼다.\n달 두 번. 벤치. 골목의 두 사람.\n적고 나니, 이건 목록이 아니라 지도 같다.',
    '지도에 점이 늘었다. 마른 유리창 둘, 접힌 사람 하나.\n점이 늘수록 종이가 무거워지는 기분이 든다.\n종이 무게는 그대로일 텐데.',
@@ -1431,7 +1476,7 @@ function endingScreen(key){
   );
   $('#n').onclick=()=>glitchCut(()=>{G={day:1,job:null,ignoredHere:0}; SV.stage>=4?hubMorning():runMorning();});
   $('#card').onclick=()=>reportCard(key);
-  const ar=$('#arch'); if(ar)ar.onclick=recordsScreen;
+  const ar=$('#arch'); if(ar)ar.onclick=()=>recordsScreen(()=>endingScreen(key));
   $('#t').onclick=title;
 }
 /* 공유용 한 장짜리 서류 — 스크린샷 유도 */
