@@ -236,7 +236,7 @@ function load(){
     reports:0,records:0,bowed:0,foundTraces:false,betrayUnlocked:false,revealReady:false,
     trio:0,endings:[],frags:[],traces:[],ignored:0,
     readTraces:[],warmSeen:[],corrVisits:0,lastClaims:[],scribeSeen:false,scribeNote:false,ledgerS:[],ledgerF:[],
-    seenFrags:[],claimsSeen:[],claimsTwice:[],marginKept:false,recordGone:false,saltBack:false,lastCut:{}};
+    seenFrags:[],claimsSeen:[],claimsTwice:[],marginKept:false,recordGone:false,saltBack:false,lastCut:{},pressSeen:[]};
   try{return Object.assign(d,JSON.parse(localStorage.getItem(SKEY))||{});}catch(e){return d;}
 }
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(SV));}catch(e){}}
@@ -248,8 +248,8 @@ let G={day:1,job:null,ignoredHere:0};
 /* ================================================================
    렌더 헬퍼
 ================================================================ */
-let seq=0;
-function dl(){return 'style="animation-delay:'+(seq++*140)+'ms"';}
+let seq=0, slowSeq=false;
+function dl(){return 'style="animation-delay:'+(seq++*(slowSeq?300:140))+'ms'+(slowSeq?';animation-duration:.9s':'')+'"';}
 function P(t,cls){return '<p class="ln '+(cls||'')+'" '+dl()+'>'+t+'</p>';}
 function BOX(t,cls,hd,id){return '<div class="sysbox '+(cls||'')+'" '+dl()+(id?' id="'+id+'"':'')+'>'+(hd?'<div class="hd">'+hd+'</div>':'')+t+'</div>';}
 function TRACE(t){return '<div class="trace" '+dl()+'><div class="hd">긁힌 글씨</div>'+t+'</div>';}
@@ -447,9 +447,19 @@ function recordsScreen(back){
     return '<div class="fragslot'+(g?' got" id="f_'+(i+1)+'"':'"')+'>'+(g?'잔류 기억 — '+n:'▩▩')+'</div>';
   }).join('');
   const trioNames=['기록하는 자','세는 자','재는 자'];
+  /* 시스템조차 이 셋의 이름은 온전히 표기하지 못한다 — 열람할 때마다 한 글자만, 랜덤하게 살아남는다 */
+  const glitchName=n=>{
+    const body=n.slice(0,-2);
+    const keep=Math.floor(Math.random()*body.length);
+    const junk='$%#@^!*';
+    let out='';
+    for(let k=0;k<body.length;k++)
+      out+=(k===keep)?body[k]:junk[Math.floor(Math.random()*junk.length)];
+    return out+' 자';
+  };
   const trioRow=trioNames.map((n,i)=>{
     const g=SV.trio>i;
-    return '<div class="fragslot'+(g?' got" id="t_'+i+'"':'"')+'>'+(g?'목격 — '+n:'▩▩')+'</div>';
+    return '<div class="fragslot'+(g?' got" id="t_'+i+'"':'"')+'>'+(g?'목격 — '+glitchName(n):'▩▩')+'</div>';
   }).join('');
   /* 정정 대장 — 어긋남 도감. 목격→접수 2단, 3회 목격 = 검증 */
   const seenKinds=LEDGER_NAMES.filter((_,i)=>(SV.ledgerS[i]||0)>0).length;
@@ -484,6 +494,30 @@ function recordsScreen(back){
   keys.forEach(k=>{const el=document.querySelector('#v_'+k); if(el)el.onclick=()=>viewEnding(k,back);});
   [1,2,3].forEach(n=>{const el=document.querySelector('#f_'+n); if(el)el.onclick=()=>viewFrag(n,back);});
   [0,1,2].forEach(i=>{const el=document.querySelector('#t_'+i); if(el)el.onclick=()=>viewTrio(i,back);});
+}
+/* 안정 0 — 창구 앞의 마지막 한 겹. 회차당 한 번은 버틸 수 있다 */
+function sootheGate(cont){
+  if(G.endured){
+    screen(
+      P('더는, 버텨지지 않는다.\n발이 먼저, 민원국 쪽으로 돌아서 있다.')+
+      BTN('창구로 간다','n','danger'));
+    $('#n').onclick=()=>ending('soothe');
+    return;
+  }
+  screen(
+    P('민원국 별관 3층의 창구가, 오늘따라 가깝게 느껴진다.\n사유란에 적을 문장까지, 이미 떠올라 있다.\n"더 보고 싶지 않습니다."')+
+    P('가면, 편해진다.\n가지 않으면 — 내일도 오늘 같을 것이다.','q')+
+    BTN('창구로 간다','go','danger')+
+    BTN('하루만, 더 버텨 본다','stay','dim')
+  );
+  $('#go').onclick=()=>ending('soothe');
+  $('#stay').onclick=()=>{
+    G.endured=1; SV.stab=1; save();
+    screen(
+      P('버틴다.\n버틴다는 말이, 하루 치 계획의 전부인 날이 있다.')+
+      BTN('다음 날','n'));
+    $('#n').onclick=cont;
+  };
 }
 /* 전 결말 회수 보상 — 봉인 기록의 서두 한 장 */
 function sealScreen(back){
@@ -933,7 +967,8 @@ function runMorning(){
   if(SV.stage>=2&&!SV.statIntro){ SV.statIntro=true; save();
     intro=BOX('의심 — 알수록, 열린다.\n안정 — 버티는 힘. 바닥나면 스스로 잊고 싶어진다.\n…측정되지 않는 것이 하나 더 있다. 그쪽은, 당신을 세고 있다.','','자가 진단'); }
   const warn=SV.expo>=12?P('이제, 세는 것을 숨기지도 않는다.\n골목 어귀의 사람이 수첩을 꺼내 들었다. 당신을 보면서.','q')
-    :SV.expo>=9?P(pick(['요즘, 같은 얼굴을 하루에 두 번 본다.\n우연이겠지. 우연이, 사흘째다.','퇴근길, 뒤에서 걸음 소리가 당신과 같은 박자로 걷는다.\n박자를 바꿔 본다. 따라온다.']),'q'):'';
+    :SV.expo>=9?P(pick(['요즘, 같은 얼굴을 하루에 두 번 본다.\n우연이겠지. 우연이, 사흘째다.','퇴근길, 뒤에서 걸음 소리가 당신과 같은 박자로 걷는다.\n박자를 바꿔 본다. 따라온다.']),'q')
+    :SV.expo>=6?P('출근길, 같은 제복을 오늘 세 번 보았다.\n세 번 다, 다른 사람이었다.\n…같은 시선이었다.','q'):'';
   screen(
     P(SV.prog>=2?ALARM_S:ALARM)+
     P('현관 앞, 배급 봉투에서 사과 한 알이 미끄러진다.\n사과는 '+(SV.run%2?'왼쪽':'오른쪽')+'으로 굴러, 문지방 앞에서 멈춘다.')+
@@ -957,6 +992,8 @@ function beat(i){
   if(Math.random()<0.15){G.sp=1;traceScene(()=>beat(i));return;}
   /* 온기 비트 — 스탯 없음, 3회 한정 */
   if(SV.warmSeen.length<3&&Math.random()<0.12){G.sp=1;warmScene(()=>beat(i));return;}
+  /* 압박 비트 — 스탯 없음, 3회 한정 */
+  if(SV.pressSeen.length<3&&Math.random()<0.12){G.sp=1;pressScene(()=>beat(i));return;}
   /* 피티 — 회차당 고유 이벤트 최소 1회 보장 */
   if(i===1&&!G.sp){
     G.sp=1;
@@ -1005,7 +1042,7 @@ function incident(){
         P('당신은 걸음을 옮긴다. 뒤돌아보지 않는 데 성공한다.')+
         P('그날 밤, 잠이 오지 않는다.\n못 본 척에도 힘이 든다는 것을, 오늘 알았다.\n그리고 그 힘이, 바닥났다는 것도.','q')+
         BTN('다음 날 아침','n'));
-      $('#n').onclick=()=>ending('soothe');
+      $('#n').onclick=()=>sootheGate(()=>{G.day++;incident();});
       return;
     }
     screen(
@@ -1060,7 +1097,7 @@ function loopTerminal(){
         ?'부서명이 안 찍혔다.\n인쇄 불량인가. 불량이겠지.\n…불량이 아니라면, 이름을 적을 수 없는 부서라는 게 있다는 건데.'
         :'어디선가 본 것 같은 번호다.\n어디서 봤는지는 떠오르지 않는다. 애초에 신고를 해 본 적이… 있던가?')
     );
-    if(SV.stab<=0){delayOrTap(2400,()=>ending('soothe'));return;}
+    if(SV.stab<=0){delayOrTap(2400,()=>sootheGate(reset));return;}
     if(SV.expo>=12){delayOrTap(2400,()=>ending('dispose'));return;}
     delayOrTap(2400,reset);
   };
@@ -1147,29 +1184,47 @@ function scribeScene(done){
   );
   $('#n').onclick=done;
 }
-/* ---------- 온기 비트 (스탯 0) ---------- */
+/* ---------- 온기 비트 (스탯 0 · 느린 리듬 — 조용함은 대기 시간으로 번역된다) ---------- */
 function warmScene(done){
   const left=[0,1,2].filter(i=>!SV.warmSeen.includes(i));
   const i=pick(left); SV.warmSeen.push(i); save();
   if(i===0){
     /* 소금 — 고르게 해 준다. 어느 쪽이든 아무 일도 일어나지 않는다. 그게 요점이다. */
+    slowSeq=true;
     screen(
       P('복도에서 옆집 사람이 종지를 들고 서 있다.\n"소금 좀… 반 줌만요. 내일 배급 받아서 갚을게요."')+
       BTN('반 줌 덜어 준다','wa')+
       BTN('한 줌 덜어 준다','wb')
     );
+    slowSeq=false;
     const after=full=>{
+      slowSeq=true;
       screen(
         P('종지가 오가는 동안 아무 일도 일어나지 않는다.\n아무 일도 일어나지 않는 십오 초였다.\n이 도시에서 제일 귀한 십오 초일지도 모른다.'+
           (full?'\n…한 줌이면, 갚으라는 말이 잊히려나.':''))+
         BTN('가던 길을 간다','n'));
+      slowSeq=false;
       $('#n').onclick=done;
     };
     $('#wa').onclick=()=>after(false);
     $('#wb').onclick=()=>after(true);
     return;
   }
+  slowSeq=true;
   screen(P(WARMTH[i])+BTN('가던 길을 간다','n'));
+  slowSeq=false;
+  $('#n').onclick=done;
+}
+/* ---------- 압박 비트 (스탯 0) — 초기 에덴의 통제는 아직 부드럽지 않다 ---------- */
+const PRESSURE=[
+'배급소 게시판에 명단이 붙어 있다.\n「금주 정정 완료: 7건」\n이름은 없다. 사유도 없다. 숫자만.\n사람들은 명단 앞에서 걸음을 늦추지 않는다.\n늦추는 것도, 어딘가에는 적히니까.',
+'골목 어귀에서 순찰이 행인을 세워 두고 있다.\n손목 단말을 내밀게 하고, 오래 들여다본다.\n행인은 고개를 숙인 채 서 있다. 죄가 있어서가 아니라,\n그게 제일 빨리 끝나는 자세라서.\n당신은 시선을 내리고 지나간다.\n…자세라는 건, 배우게 된다.',
+'15시 정각. 확성기가 켜진다.\n"금일 배급은 정상 실시되었습니다. 금일 민원 처리는 정상 완료되었습니다."\n정상. 정상. 정상.\n확성기가 꺼진 뒤에도, 거리는 한동안 그 단어의 모양대로 조용하다.'
+];
+function pressScene(done){
+  const left=[0,1,2].filter(i=>!SV.pressSeen.includes(i));
+  const i=pick(left); SV.pressSeen.push(i); save();
+  screen(P(PRESSURE[i])+BTN('가던 길을 간다','n'));
   $('#n').onclick=done;
 }
 
@@ -1183,6 +1238,7 @@ function hubMorning(){
   if(SV.stage>=2&&SV.trio<3&&Math.random()<0.22){trioScene(hubMorning);return;}
   if(!SV.scribeSeen&&Math.random()<0.15){scribeScene(hubMorning);return;}
   if(SV.warmSeen.length<3&&Math.random()<0.12){warmScene(hubMorning);return;}
+  if(SV.pressSeen.length<3&&Math.random()<0.12){pressScene(hubMorning);return;}
   G.job={loc:'…같은 자리'}; G.day=1;
   let saltLine='';
   if(SV.warmSeen.includes(0)&&!SV.saltBack&&Math.random()<0.35){
@@ -1255,7 +1311,7 @@ function actHide(){
 }
 function endDay(txt,fxo){
   fx(fxo);
-  if(SV.stab<=0){ending('soothe');return;}
+  if(SV.stab<=0){sootheGate(reset);return;}
   if(SV.expo>=12){ending('dispose');return;}
   screen(P(txt)+BTN('하루가 접힌다','n'));
   $('#n').onclick=reset;
@@ -1291,7 +1347,7 @@ function escalate(){
   $('#n').onclick=()=>{
     SV.reports++; SV.totalReports++; fx({susp:1,expo:2});
     bumpRun(); save();
-    screen(BOX(e.boxx+(SV.scribeSeen?'\n비고: 수기 병기':''),'','접수 완료'));
+    screen(BOX(e.boxx+(SV.scribeSeen?'\n비고: 수기 병기':'')+(SV.totalReports>=5?'\n$#%고: 대$@#%장 미^%ㄱㅣ*(재':''),'','접수 완료'));
     delayOrTap(2000,()=>{
       const st=$('#stage');
       st.classList.add('breaking');
@@ -1498,7 +1554,8 @@ function ending(key){
   }[key];
   if(tr&&!SV.traces.includes(tr))SV.traces.push(tr);
   /* 협조자: 기억이 지워진다 — 침식 단계 후퇴 */
-  if(key==='collab'){SV.stage=1;SV.prog=0;SV.reports=0;SV.records=0;SV.foundTraces=false;SV.betrayUnlocked=false;SV.susp=Math.min(SV.susp,3);}
+  /* 협조자 — 완화 처치가 예전만큼 깊게 안 먹힌다. 잔류 단계(stage2)에서 깨어나 3~4리셋이면 재각성 */
+  if(key==='collab'){SV.stage=2;SV.prog=3;SV.reports=0;SV.records=0;SV.foundTraces=false;SV.betrayUnlocked=false;SV.susp=Math.min(SV.susp,3);}
   if(key==='soothe')SV.stab=8;
   if(key==='dispose')SV.expo=0;
   bumpRun();
