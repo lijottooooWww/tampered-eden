@@ -236,7 +236,7 @@ function load(){
     reports:0,records:0,bowed:0,foundTraces:false,betrayUnlocked:false,revealReady:false,
     trio:0,endings:[],frags:[],traces:[],ignored:0,
     readTraces:[],warmSeen:[],corrVisits:0,lastClaims:[],scribeSeen:false,scribeNote:false,ledgerS:[],ledgerF:[],
-    seenFrags:[],claimsSeen:[],marginKept:false,recordGone:false,saltBack:false};
+    seenFrags:[],claimsSeen:[],claimsTwice:[],marginKept:false,recordGone:false,saltBack:false};
   try{return Object.assign(d,JSON.parse(localStorage.getItem(SKEY))||{});}catch(e){return d;}
 }
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(SV));}catch(e){}}
@@ -472,7 +472,8 @@ function recordsScreen(back){
     '<div class="ledgergrid">'+led+'</div>'+
     '<div class="lbl" style="margin-top:14px">수신 단편 — '+SV.seenFrags.length+' / '+FRAGS.length+' <span style="opacity:.6">(정정 사이, 스치는 것들)</span></div></div>'+
     (verKinds>0?P('세 번 본 것에는 줄이 생긴다. 줄이 생긴 장부는, 부정하기 어렵다.\n…마지막 칸은 칸만 있고, 항목이 처음부터 없다.','q'):'')+
-    (SV.stage>=4&&seenKinds<LEDGER_NAMES.length?P('…▩▩ 칸은, 잊은 눈에만 보인다.','q'):'')+
+    (SV.stage>=4&&seenKinds<LEDGER_NAMES.length?P('…빈 칸 몇은, 잊은 눈에만 보인다.','q'):'')+
+    (verKinds===LEDGER_NAMES.length?P('열 개의 줄.\n이제 이 장부는, 도시보다 정직하다.','q'):'')+
     BOX(TEASER(),'','LOCKED')+
     (sealOpen?BTN('봉인 기록의 서두를 연다','seal','dim'):'')+
     BTN(back?'돌아간다':'타이틀로','back','ghost'),
@@ -792,7 +793,7 @@ const INCIDENTS=[
  {t:'방금 장부에 적은 줄이 없다.\n잉크가 마를 시간도 없었는데, 종이는 처음부터 빈 줄이었다는 얼굴을 하고 있다.\n펜을 쥔 손에는 쓴 기억이 아직 남아 있다.'},
  {t:'퇴근 전 점호. 구역 명부와 실제 인원이 정확히 맞는다.\n어제도 맞았다. 그저께도 맞았다.\n…그저께, 줄에서 사람이 하나 접히듯 사라지는 걸 봤는데.\n명부는 한 번도 틀린 적 없다는 얼굴을 하고 있다.\n장부가 맞는다. 세상이 장부 쪽으로 맞춰지고 있다면 — 장부는 앞으로도 계속 맞을 것이다.'},
  {t:'골목 환기구에서 단내가 올라온다.\n…달콤한, 부드러운, 이름이 혀끝에 걸리는 냄새.\n이 도시 배급 목록에 저런 냄새는 없다. 있어 본 적도 없다.\n없는 것의 냄새가, 어디선가, 아래에서, 올라오고 있다.'},
- {t:'손목 단말이 06시를 알린다.\n…방금 울리지 않았나. 화면을 본다. 06:00.\n시계는 한 번 울렸다는 얼굴을 하고 있다.\n손목에는, 네 번의 진동이 아직 남아 있다.'},
+ {t:'…오늘 아침 일이, 이제야 이상해진다.\n손목 단말이 06시를 알렸다. 그리고 —\n방금 울리지 않았었나. 화면은 06:00.\n시계는 한 번 울렸다는 얼굴을 하고 있었다.\n손목에는, 네 번의 진동이 남아 있었다.'},
  {t:'퇴근길, 맞은편에서 오던 사람이 당신을 보고 비켜선다.\n지나치고 나서야 깨닫는다 —\n비켜서는 각도가, 당신이 움직이기 전에 나왔다.\n당신이 어느 쪽으로 갈지, 그 사람은 먼저 알고 있었다.'}
 ];
 const LEDGER_NAMES=['같은 사람이 두 번','기둥 없는 그림자','마른 유리 한 장','접힌 사람','벤치가 없던 날','지워진 한 줄','맞는 명부','없는 것의 냄새','두 번 운 알람','먼저 비킨 사람'];
@@ -831,7 +832,7 @@ const CLAIMS=[
   ch:[{l:'착오 확인 도장을 찍는다',th:1,fx:{},rx:'쾅.\n사유란 "고령"에 동그라미를 쳤다. 노인은 서류를 받아 들고 중얼거렸다.\n"…그래. 하루쯤이야."\n하루쯤. 당신은 그 말을 퇴근길 내내 데리고 걸었다.'},
       {l:'"그 수요일에, 기억나는 게 하나라도 있습니까"',fx:{susp:1},rx:'노인은 오래 생각했다.\n"…빗소리. 오후에. 그건 기억나."\n수요일 15시, 강우 집행 기록은 정상.\n기억에 없는 하루에도, 비는 시간을 지켰다.'}],
   t2:'민원 — 노인.\n"이번엔 금요일이야. 금요일이 없었어."\n요일이 바뀌었다. 확신은 그대로다.\n서류상 노인의 금요일도, 완벽하다.',
-  ch2:[{l:'착오 확인 도장을 찍는다',th:1,fx:{},rx:'쾅.\n사유란 "고령"에, 동그라미가 하나 더 앉았다.\n노인은 서류를 받아 들고, 이번에는 아무 말도 하지 않았다.\n하루가 또, 서류 쪽이 맞는 것으로 정리되었다.'},
+  ch2:[{l:'착오 확인 도장을 찍는다',th:1,fx:{},rx:'쾅.\n사유란 "고령"에, 동그라미가 앉았다. 몇 번째인지는, 서류만 안다.\n노인은 서류를 받아 들고, 이번에는 아무 말도 하지 않았다.\n하루가 또, 서류 쪽이 맞는 것으로 정리되었다.'},
        {l:'"그 금요일에, 기억나는 게 하나라도 있습니까"',fx:{susp:1},rx:'노인은 이번엔 오래 생각하지 않았다.\n"…빗소리. 또, 빗소리야."\n금요일 15시, 강우 집행 기록은 정상.\n없어진 요일마다, 비만 남는다.'}]},
  {t:'민원 — 젊은 남자. 사유란이 이상하다.\n"매주 목요일에 양초를 삽니다. 쓰지도 않아요. 서랍에 마흔 개 있어요.\n이게… 정정되는 항목인가요? 제가 이상한 건가요?"\n습관은 이상 현상이 아니다.\n그런데 이 남자는, 자기 손이 무섭다는 얼굴을 하고 있다.',
   ch:[{l:'"이상 아닙니다" — 반려한다',fx:{},rx:'남자는 안심하지 못한 채 돌아갔다.\n습관에는 이유가 있어야 한다.\n이유만 지워진 습관은, 그럼, 뭐라고 부르나.'},
@@ -866,22 +867,31 @@ function corrJob(){
     const c=CLAIMS[idx];
     const seen=SV.claimsSeen.includes(idx);
     if(!(seen&&c.t2))return {t:c.t,ch:c.ch,ci:idx};
-    let t=c.t2;
-    if(idx===0&&SV.marginKept)t+='\n서랍 제일 안쪽에는, 그 서식이 아직 있다.\n여백까지 꽉 찬 채로.';
     let ch=c.ch2||c.ch;
     /* 유족 재방문: 서랍이 비어 있으면 '보여줄' 수 없다 — 여백 안내로 폴백 */
     if(idx===0&&c.ch2)ch=[c.ch2[0], SV.marginKept?c.ch2[1]:c.ch[1]];
-    return {t:t,ch:ch,ci:idx};
+    /* 3회차부터는 변주도 반복이다 — 반복임을 아는 문장으로 */
+    if((SV.claimsTwice||[]).includes(idx))
+      return {t:'민원 — 낯익은 얼굴.\n같은 민원. 같은 서식.\n…당신만, 세고 있다.',ch:ch,ci:idx};
+    let t=c.t2;
+    if(idx===0&&SV.marginKept)t+='\n서랍 제일 안쪽에는, 그 서식이 아직 있다.\n여백까지 꽉 찬 채로.';
+    return {t:t,ch:ch,ci:idx,tw:idx};
   };
   const beats=[mk(a),mk(b)];
   save();
   return {id:'correct',loc:'시민민원국 정정과',intro:intro,beats:beats};
 }
-/* 직업 비트 3종 풀에서 회차마다 2개 — 같은 자리, 조금 다른 하루 */
+/* 직업 비트 3종 풀에서 회차마다 2개 — 같은 자리, 조금 다른 하루.
+   직전에 뺀 비트는 기억해 두고 이번엔 살린다(조합 순환 보장) */
 function jobWith(j){
   if(j.beats.length<=2)return j;
-  const bs=j.beats.slice();
-  bs.splice(Math.floor(Math.random()*bs.length),1);
+  SV.lastCut=SV.lastCut||{};
+  const prev=SV.lastCut[j.id];
+  let cands=j.beats.map((_,i)=>i);
+  if(prev!==undefined&&cands.length>1)cands=cands.filter(i=>i!==prev);
+  const cut=cands[Math.floor(Math.random()*cands.length)];
+  SV.lastCut[j.id]=cut; save();
+  const bs=j.beats.filter((_,i)=>i!==cut);
   return {id:j.id,loc:j.loc,intro:j.intro,beats:bs};
 }
 function pickJob(){
@@ -894,7 +904,9 @@ function pickJob(){
 }
 function pickInc(){
   SV.lastIncs=SV.lastIncs||[];
-  const idxs=INCIDENTS.map((_,i)=>i).filter(i=>!SV.lastIncs.includes(i));
+  let idxs=INCIDENTS.map((_,i)=>i).filter(i=>!SV.lastIncs.includes(i));
+  /* 배급소 근무일엔 '맞는 명부' 제외 — 같은 저녁에 같은 깨달음을 두 번 주지 않는다 */
+  if(G.job&&G.job.id==='ration')idxs=idxs.filter(i=>i!==6);
   const i=idxs.length?pick(idxs):Math.floor(Math.random()*INCIDENTS.length);
   SV.lastIncs.push(i); if(SV.lastIncs.length>2)SV.lastIncs.shift(); save();
   return i;
@@ -956,6 +968,7 @@ function beat(i){
   if(i>=G.job.beats.length){incident();return;}
   const b=G.job.beats[i];
   if(b.ci!==undefined&&!SV.claimsSeen.includes(b.ci)){SV.claimsSeen.push(b.ci);save();}
+  if(b.tw!==undefined&&!(SV.claimsTwice||[]).includes(b.tw)){SV.claimsTwice=SV.claimsTwice||[];SV.claimsTwice.push(b.tw);save();}
   let html=P(b.t);
   b.ch.forEach((c,ci)=>{html+=BTN(c.l,'c'+ci,ci===1?'dim':'');});
   screen(html);
