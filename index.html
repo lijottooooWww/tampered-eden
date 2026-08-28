@@ -236,7 +236,7 @@ function load(){
     reports:0,records:0,bowed:0,foundTraces:false,betrayUnlocked:false,revealReady:false,
     trio:0,endings:[],frags:[],traces:[],ignored:0,
     readTraces:[],warmSeen:[],corrVisits:0,lastClaims:[],scribeSeen:false,scribeNote:false,ledgerS:[],ledgerF:[],
-    seenFrags:[],claimsSeen:[],claimsTwice:[],marginKept:false,recordGone:false,saltBack:false};
+    seenFrags:[],claimsSeen:[],claimsTwice:[],marginKept:false,recordGone:false,saltBack:false,lastCut:{}};
   try{return Object.assign(d,JSON.parse(localStorage.getItem(SKEY))||{});}catch(e){return d;}
 }
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(SV));}catch(e){}}
