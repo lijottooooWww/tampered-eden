@@ -1000,6 +1000,7 @@ function beat(i){
     if(SV.stage>=2&&SV.trio<3){trioScene(()=>beat(i));return;}
     if(SV.stage>=2&&!SV.scribeSeen){scribeScene(()=>beat(i));return;}
     if(SV.warmSeen.length<3){warmScene(()=>beat(i));return;}
+    if(SV.pressSeen.length<3){pressScene(()=>beat(i));return;}
     traceScene(()=>beat(i));return;
   }
   if(i>=G.job.beats.length){incident();return;}
@@ -1553,8 +1554,7 @@ function ending(key){
     edge:'가장자리에 가 봐라. 소리가 나지 않는 곳이 있다.'
   }[key];
   if(tr&&!SV.traces.includes(tr))SV.traces.push(tr);
-  /* 협조자: 기억이 지워진다 — 침식 단계 후퇴 */
-  /* 협조자 — 완화 처치가 예전만큼 깊게 안 먹힌다. 잔류 단계(stage2)에서 깨어나 3~4리셋이면 재각성 */
+  /* 협조자: 기억이 지워진다 — 완화 처치가 예전만큼 깊게 안 먹힌다. 잔류 단계(stage2)에서 깨어나 3~4리셋이면 재각성 */
   if(key==='collab'){SV.stage=2;SV.prog=3;SV.reports=0;SV.records=0;SV.foundTraces=false;SV.betrayUnlocked=false;SV.susp=Math.min(SV.susp,3);}
   if(key==='soothe')SV.stab=8;
   if(key==='dispose')SV.expo=0;
