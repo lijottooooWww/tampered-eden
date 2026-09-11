@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>템퍼드 에덴 — 부록</title>
+<style>
+  :root {
+    --bg: #0b0e14; --bg-soft: #11151f; --line: #232b3b;
+    --text: #d9dce4; --text-dim: #8b93a5; --apple: #e5484d;
+    --light: #e8c86a; --terminal: #7ee787;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: "Noto Serif KR", "Apple SD Gothic Neo", serif;
+    line-height: 1.9; font-size: 15.5px;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 24px 140px; }
+  header { padding: 90px 0 44px; text-align: center; border-bottom: 1px solid var(--line); }
+  header .label {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 11px; letter-spacing: 3px; color: var(--terminal); margin-bottom: 18px;
+  }
+  header h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; }
+  header .sub { margin-top: 12px; color: var(--light); font-size: 14px; letter-spacing: 1px; }
+
+  .rules {
+    margin: 44px 0 10px; padding: 22px 26px;
+    background: var(--bg-soft); border: 1px solid var(--line); border-radius: 8px;
+    font-family: "Apple SD Gothic Neo", sans-serif; font-size: 13.5px; line-height: 2;
+    color: var(--text-dim);
+  }
+  .rules b { color: var(--text); font-weight: 600; }
+
+  section { padding-top: 76px; }
+  section h2 {
+    font-size: 20px; font-weight: 700; color: #fff;
+    padding-bottom: 10px; border-bottom: 1px solid var(--line); margin-bottom: 6px;
+  }
+  section .src {
+    font-family: "SF Mono", Menlo, monospace; font-size: 11px;
+    letter-spacing: 1.5px; color: var(--apple); margin-bottom: 26px;
+  }
+  h3 {
+    font-family: "Apple SD Gothic Neo", sans-serif;
+    font-size: 14px; color: var(--light); font-weight: 700;
+    margin: 38px 0 12px; letter-spacing: 0.5px;
+  }
+  .scroll { overflow-x: auto; margin-bottom: 8px; }
+  table {
+    border-collapse: collapse; width: 100%; min-width: 660px;
+    font-family: "Apple SD Gothic Neo", sans-serif; font-size: 13px; line-height: 1.75;
+  }
+  th, td {
+    border: 1px solid var(--line); padding: 9px 12px;
+    text-align: left; vertical-align: top;
+  }
+  th {
+    background: var(--bg-soft); color: var(--light);
+    font-weight: 700; font-size: 12.5px; white-space: nowrap;
+  }
+  td.k { color: var(--text-dim); white-space: nowrap; width: 1%; }
+  td.mono, th.mono { font-family: "SF Mono", Menlo, monospace; font-size: 12px; }
+  td.same { color: var(--text-dim); font-style: normal; }
+  td.void {
+    background: repeating-linear-gradient(
+      135deg, transparent, transparent 7px,
+      rgba(139,147,165,.13) 7px, rgba(139,147,165,.13) 8px);
+  }
+  tr.apart td { padding-top: 22px; padding-bottom: 22px; }
+  .note {
+    font-family: "Apple SD Gothic Neo", sans-serif; font-size: 12px;
+    color: var(--text-dim); margin-top: 10px; line-height: 1.9;
+  }
+  footer {
+    margin-top: 110px; border-top: 1px solid var(--line); padding-top: 28px;
+    text-align: center; color: var(--text-dim); font-size: 12px;
+    font-family: "SF Mono", Menlo, monospace; line-height: 2;
+  }
+
+  .sitenav{max-width:940px;margin:0 auto;padding:14px 24px 0;font-family:"Apple SD Gothic Neo",sans-serif;
+    font-size:12.5px;letter-spacing:.3px}
+  .sitenav a{color:#8b93a5;text-decoration:none;border-bottom:1px solid transparent}
+  .sitenav a:hover{color:#e8c86a;border-bottom-color:#e8c86a}
+  .sitenav .sep{color:#39405190;margin:0 9px}
+
+  .ainotice{margin:20px auto 0;max-width:660px;font-family:"Apple SD Gothic Neo",sans-serif;
+    font-size:11.5px;line-height:1.85;color:#6d768a;letter-spacing:.1px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="label">APPENDIX</div>
+    <h1>템퍼드 에덴 — 부록</h1>
+    <div class="sub">삼부작 완결 · 본문에 실린 기록의 대조표 3종</div>
+    <div class="ainotice">이 작품의 문장은 생성형 AI(Claude)와의 협업으로 쓰였습니다.<br>세계관·구조·집필 규율의 설계와 모든 최종 판단은 저자가 했습니다.</div>
+  </div>
+</header>
+<div class="sitenav"><a href="index.html">차례</a><span class="sep">·</span><a href="part1.html">1부</a><span class="sep">·</span><a href="part2.html">2부</a><span class="sep">·</span><a href="part3.html">3부</a><span class="sep">·</span><span style="color:#e8c86a">부록</span></div>
+
+<div class="wrap">
+
+  <div class="rules">
+    이 부록은 <b>본문에 실린 기록만 옮긴다.</b><br>
+    · 모든 항목에 출처(부·화)를 적는다. 출처를 적을 수 없는 것은 싣지 않는다.<br>
+    · 칸에 <b>「—」</b>만 놓인 것 = 그 기록에 그 줄이 <b>적힌 적이 없다.</b>(인용문 안의 줄표는 본문 축자이며 이 뜻이 아니다.)<br>
+    · <b>기제를 적는 칸은 비워 둔다</b> — 빗금 친 칸.<br>
+    · 결론 행은 두지 않는다.
+  </div>
+
+<!-- ==================== 부록 A ==================== -->
+<section id="a">
+  <h2>부록 A — 세 프롤로그 대조표</h2>
+  <div class="src">1부 프롤로그 · 2부 프롤로그 · 3부 프롤로그 · 3부 36·37·41화</div>
+
+  <div class="scroll">
+  <table>
+    <tr>
+      <th style="width:15%">항목</th>
+      <th style="width:28%">1부 — 실험 #45890</th>
+      <th style="width:28%">2부 — 실험 #45891</th>
+      <th style="width:28%">3부 — 실험 #45892</th>
+    </tr>
+    <tr><td class="k">표제</td><td>사과는 어디로 갔는가</td><td class="same">축자 동일</td><td class="same">축자 동일</td></tr>
+    <tr><td class="k">시점 표기</td><td>15년 전</td><td>15년 전</td><td>실험 #45892 · 15년 전</td></tr>
+    <tr>
+      <td class="k">사과의 방향</td>
+      <td>왼쪽으로, 시장 골목의 한복판을 향해</td>
+      <td>오른쪽으로, 좌판들 아래의 그늘을 향해</td>
+      <td>비스듬히 가로질러</td>
+    </tr>
+    <tr>
+      <td class="k">소멸 지점</td>
+      <td>가로등 불빛이 고인 물웅덩이 한가운데</td>
+      <td>리어카 바퀴 앞의 환한 자리 — 그늘에 닿기도 전에</td>
+      <td>배수구 격자 바로 앞 — 격자까지 손가락 두 마디쯤</td>
+    </tr>
+    <tr>
+      <td class="k">지면 서술</td>
+      <td>어딘가에 빠진 것이 아니었다. 들어갈 틈 하나 없는 맨돌바닥</td>
+      <td>어딘가에 숨은 것이 아니었다. 그늘도 틈도 없는 맨돌바닥</td>
+      <td>굴러 들어간 것이 아니었다. 빠진 것도 아니었다</td>
+    </tr>
+    <tr>
+      <td class="k">아이의 반박</td>
+      <td>"배수구는 반대쪽인데요. 사과는 저쪽으로 갔어요. 그냥, 구르다가 없어졌어요."</td>
+      <td class="same">축자 동일</td>
+      <td>"아니에요, 그 앞에서 그냥 없어졌어요. 닿지도 않았는데."</td>
+    </tr>
+    <tr>
+      <td class="k">노점 장부 마감</td>
+      <td>사과 마흔두 개 입고, 서른아홉 개 판매, 세 개 잔여</td>
+      <td class="same">축자 동일</td>
+      <td class="same">축자 동일</td>
+    </tr>
+    <tr>
+      <td class="k">쪼그려 앉은 자리</td>
+      <td>어른들이 가리켰던 반대쪽 배수구 앞 — 사과가 들어갔을 리 없는 곳</td>
+      <td class="same">축자 동일</td>
+      <td>배수구 앞 — 사과가 닿지 않은 그 격자</td>
+    </tr>
+    <tr><td class="k">배수구의 냄새</td><td>달콤한 바닐라</td><td class="same">축자 동일</td><td class="same">축자 동일</td></tr>
+    <tr><td class="k">일기장 마지막 문장</td><td>줄을 그음</td><td class="same">축자 동일</td><td class="same">축자 동일</td></tr>
+    <tr><td class="k">그날 밤의 비</td><td>심장이 한 번 뛰는 동안 공중에 멈춤 — 본 사람 없음</td><td class="same">축자 동일</td><td class="same">축자 동일</td></tr>
+    <tr><td class="k">관찰 기록</td><td class="mono">#45890-1131</td><td class="mono">#45891-1131</td><td class="mono">#45892-1131</td></tr>
+    <tr><td class="k">소거의 기제</td><td class="void"></td><td class="void"></td><td class="void"></td></tr>
+  </table>
+  </div>
+
+  <h3>A-2. 같은 로그의 행 구성</h3>
+  <div class="scroll">
+  <table>
+    <tr><th style="width:15%">행</th><th style="width:28%">1부</th><th style="width:28%">2부</th><th style="width:28%">3부</th></tr>
+    <tr><td class="k">이상 현상</td><td class="mono">객체 소거 확인(원인: 할당 조정)</td><td class="same">축자 동일</td><td class="same">축자 동일</td></tr>
+    <tr><td class="k">소거 지점</td><td class="k" style="text-align:center">—</td><td class="k" style="text-align:center">—</td><td class="mono">보정 적용. 직전 런 대비 편차: 감소.</td></tr>
+    <tr><td class="k">목격 개체</td><td class="mono">1(미성숙 개체)</td><td class="same">축자 동일</td><td class="same">축자 동일</td></tr>
+    <tr><td class="k">개체 식별</td><td class="mono">좌안 하부 마커 확인. 계보 대조: 일치(P-0)</td><td class="same">축자 동일</td><td class="same">축자 동일</td></tr>
+    <tr><td class="k">기억 수정</td><td class="mono">불필요</td><td class="same">축자 동일</td><td class="same">축자 동일</td></tr>
+    <tr><td class="k">사유</td><td class="mono">해당 개체군은 이상 현상에 대한 설명을 자체 생성함. / 개입은 오히려 데이터 오염을 초래할 수 있음. 관찰 지속.</td><td class="same">축자 동일</td><td class="same">축자 동일</td></tr>
+    <tr><td class="k">비고</td><td class="mono">목격 개체가 현상에 명칭을 부여함('빛의 비'). / 언어적 상상력 지표 상향. 해당 개체 장기 추적 태그 부여. 흥미로움.</td><td class="same">축자 동일</td><td class="same">축자 동일</td></tr>
+    <tr><td class="k">로그 줄 수</td><td class="mono">8</td><td class="mono">8</td><td class="mono">9</td></tr>
+  </table>
+  </div>
+
+  <h3>A-3. 같은 날의 다른 기록 — 3부 36·37·41화, 7층에서 발견된 세 켜</h3>
+  <div class="scroll">
+  <table>
+    <tr><th style="width:15%">항목</th><th style="width:28%">첫째 켜</th><th style="width:28%">둘째 켜</th><th style="width:28%">셋째 켜</th></tr>
+    <tr><td class="k">켜 머리<br><span class="note">3부 36화</span></td><td class="mono">런 #45890</td><td class="mono">45891</td><td class="mono">45892</td></tr>
+    <tr><td class="k">두께<br><span class="note">3부 36화</span></td><td>제일 두꺼움</td><td>첫째보다 조금 얇음</td><td>손가락 반 마디</td></tr>
+    <tr>
+      <td class="k">그날의 민원<br><span class="note">3부 37화</span></td>
+      <td>사과 한 알. 좌측으로 굴러 물웅덩이 한가운데서 소실.</td>
+      <td>사과 한 알. 우측으로 굴러 리어카 바퀴 앞 밝은 자리에서 소실.</td>
+      <td>사과 한 알. 배수구 격자 두 마디 앞에서 소실.</td>
+    </tr>
+    <tr>
+      <td class="k">신고인 진술<br><span class="note">3부 37화</span></td>
+      <td>신고인은 배수구에 들어가지 않았다고 진술.</td>
+      <td>신고인 진술 동일.</td>
+      <td>신고인 진술 동일.</td>
+    </tr>
+    <tr><td class="k">처리<br><span class="note">3부 37화</span></td><td>접수 반려</td><td>접수 반려</td><td>접수 반려</td></tr>
+    <tr>
+      <td class="k">여백<br><span class="note">3부 37화</span></td>
+      <td class="k" style="text-align:center">—</td><td class="k" style="text-align:center">—</td>
+      <td>같은 건 세 번째. 신고인 동일 계보. 이번에는 반려 사유란을 비워 둔다.</td>
+    </tr>
+    <tr><td class="k">그날의 줄 수<br><span class="note">3부 41화</span></td><td>아홉 줄</td><td>일곱 줄</td><td>다섯 줄</td></tr>
+    <tr>
+      <td class="k">야간 관측 보고<br><span class="note">3부 41화</span></td>
+      <td>달 이중 표시, 삼 초. 목격 다수. 자체 설명 생성 확인.</td>
+      <td class="k" style="text-align:center">—</td><td class="k" style="text-align:center">—</td>
+    </tr>
+    <tr>
+      <td class="k">필체<br><span class="note">3부 41화</span></td>
+      <td colspan="2" style="text-align:center">같은 손 — 획의 시작이 같고, 세로획 끝을 눌러 맺는 버릇이 같고, 숫자 4를 두 번에 나눠 쓰는 것까지 같았다</td>
+      <td>활자 + 기록자의 한 줄만 손글씨 — 앞의 둘과 아무 데도 닮지 않은 손</td>
+    </tr>
+    <tr><td class="k">그 손</td><td class="void"></td><td class="void"></td><td class="void"></td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- ==================== 부록 B ==================== -->
+<section id="b">
+  <h2>부록 B — 관찰 기록 번호 대조표</h2>
+  <div class="src">전 3부 · 관찰 기록 17건</div>
+
+  <h3>B-1. 번호순 배열</h3>
+  <div class="scroll">
+  <table>
+    <tr>
+      <th class="mono" style="width:16%">번호</th>
+      <th style="width:28%">1부 #45890</th>
+      <th style="width:28%">2부 #45891</th>
+      <th style="width:28%">3부 #45892</th>
+    </tr>
+    <tr><td class="mono">-1131</td><td>프롤로그</td><td>프롤로그</td><td>프롤로그</td></tr>
+    <tr><td class="mono">-2201</td><td class="k" style="text-align:center">—</td><td class="k" style="text-align:center">—</td><td>8화</td></tr>
+    <tr><td class="mono">-2207</td><td>11화</td><td class="k" style="text-align:center">—</td><td class="k" style="text-align:center">—</td></tr>
+    <tr><td class="mono">-2213</td><td>20화</td><td class="k" style="text-align:center">—</td><td class="k" style="text-align:center">—</td></tr>
+    <tr><td class="mono">-2236</td><td class="k" style="text-align:center">—</td><td class="k" style="text-align:center">—</td><td>20화</td></tr>
+    <tr><td class="mono">-2244</td><td class="k" style="text-align:center">—</td><td>13화</td><td class="k" style="text-align:center">—</td></tr>
+    <tr><td class="mono">-2251</td><td>33화</td><td>32화</td><td>22화</td></tr>
+    <tr><td class="mono">-2262</td><td class="k" style="text-align:center">—</td><td class="k" style="text-align:center">—</td><td>29화</td></tr>
+    <tr><td class="mono">-2270</td><td class="k" style="text-align:center">—</td><td class="k" style="text-align:center">—</td><td>40화</td></tr>
+    <tr><td class="mono">-2277</td><td class="k" style="text-align:center">—</td><td>44화</td><td class="k" style="text-align:center">—</td></tr>
+    <tr><td class="mono">번호 없음</td><td>45화</td><td>45화</td><td>45화</td></tr>
+    <tr><td class="k">번호 부여 규칙</td><td class="void"></td><td class="void"></td><td class="void"></td></tr>
+  </table>
+  </div>
+
+  <h3>B-2. 기록 내역</h3>
+  <div class="scroll">
+  <table>
+    <tr>
+      <th class="mono" style="width:15%">번호</th>
+      <th style="width:11%">출처</th>
+      <th style="width:48%">본문 인용</th>
+      <th style="width:26%">플래그</th>
+    </tr>
+    <tr><td class="mono">#45890-1131</td><td>1부 프롤로그</td><td>이상 현상: 객체 소거 확인(원인: 할당 조정) / 기억 수정: 불필요 / 해당 개체 장기 추적 태그 부여. 흥미로움.</td><td class="k" style="text-align:center">—</td></tr>
+    <tr><td class="mono">#45890-2207</td><td>1부 11화</td><td>C1-C3 접촉 확인. / 예상 모델 이탈: 41일. / 패턴 편차 발생. / 추가 관찰 필요.</td><td class="mono">RECURRING</td></tr>
+    <tr><td class="mono">#45890-2213</td><td>1부 20화</td><td>기억 소거 이벤트: 1. / 정서 잔류: 검출됨. / 소거 대상 외 전이: 확인 중.</td><td class="mono">없음</td></tr>
+    <tr><td class="mono">#45890-2251</td><td>1부 33화</td><td>정보 확산 이벤트: 1. / 신뢰 변수: 전 구역 급락. / 분산 가속. / 개입: 보류. 계속 관찰.</td><td class="k" style="text-align:center">—</td></tr>
+    <tr><td class="mono">(번호 없음)</td><td>1부 45화</td><td>분산 임계: 초과. 실험 종료. / 개체 데이터: 보존. 잔류 데이터: 폐기. / 차기 런: #45891 — 준비 중. 변수 조정: 적용됨.</td><td class="k" style="text-align:center">—</td></tr>
+    <tr><td class="mono">#45891-1131</td><td>2부 프롤로그</td><td>1부 프롤로그 로그와 축자 동일</td><td class="k" style="text-align:center">—</td></tr>
+    <tr><td class="mono">#45891-2244</td><td>2부 13화</td><td>C1 — 개별 주시 전환. / 편차 누적.</td><td class="mono">없음</td></tr>
+    <tr><td class="mono">#45891-2251</td><td>2부 32화</td><td>물리 층위 간섭: 3. 개체 손실: 0. / C2 — 편차 임계 접근.</td><td class="mono">없음</td></tr>
+    <tr><td class="mono">#45891-2277</td><td>2부 44화</td><td>물리 층위 손상: 임계 초과. 복구 불가 판정. / C2 — 진술 1건, 기록됨. / 개입: 실행.</td><td class="k" style="text-align:center">—</td></tr>
+    <tr><td class="mono">(번호 없음)</td><td>2부 45화</td><td>종료 사유: 관측 대상 아님. 물리 층위 복구 불가. / 런 판정: 무효. / 비고: 동일 패턴 반복 확인. 분리 유지 변수 재검토 권고.</td><td class="k" style="text-align:center">—</td></tr>
+    <tr><td class="mono">#45892-1131</td><td>3부 프롤로그</td><td>(1부·2부와 동일) + 소거 지점: 보정 적용. 직전 런 대비 편차: 감소.</td><td class="k" style="text-align:center">—</td></tr>
+    <tr><td class="mono">#45892-2201</td><td>3부 8화</td><td>C2×C3 — 접촉 확인. 경로 재현율: 높음. / C1 — 재투입 보류. 유지.</td><td class="mono">없음</td></tr>
+    <tr><td class="mono">#45892-2236</td><td>3부 20화</td><td>C3 — 지정 외 개체와 결속. 매개: 종이. / 동형 관행 대조: #45890 — 확인. #45891 — 확인. / 재발생: 세 번째. 관행 기원 개체: 현 런 — 해당 없음. / C2 — 궤적 결손 구간: 2. 원인 분류: 실패.</td><td class="mono">관찰 밀도 상향.</td></tr>
+    <tr><td class="mono">#45892-2251</td><td>3부 22화</td><td>우선순위 이관: 완료. 기상 연산 반환. / 지연 실측: 60.0초. / C3 — 옥상. 측정 지속. 이탈 없음. / C2 — 정지 3분. 위치: 시장.</td><td class="mono">없음. 사유: 예상 범위.</td></tr>
+    <tr><td class="mono">#45892-2262</td><td>3부 29화</td><td>C3 — 결론 도출. 기제 인지: 확인. 주체 인지: 미확인. / 경로: 자력. 외부 접촉 기여도 0.</td><td class="mono">설정. 사유: 예상 범위 밖.</td></tr>
+    <tr><td class="mono">#45892-2270</td><td>3부 40화</td><td>지정 외 개체 — 회수. / C3 — 접촉 대상 1 감소. 잔여: C2. / 보정 잔차: 0.000.</td><td class="mono">없음. 사유: 관찰 경로 중복. 예외 대상 아님.</td></tr>
+    <tr><td class="mono">(번호 없음)</td><td>3부 45화</td><td>종료 시퀀스 — 개시. 프레임 정지: 적용. / 목격 규모: 전 개체. 합리화 생성률: 0. / C3 — 기록 행위 지속. 정지 미적용. 재적용: 실패. 재적용: 실패. / 종료 판정 — 보류.</td><td class="k" style="text-align:center">—</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- ==================== 부록 C ==================== -->
+<section id="c">
+  <h2>부록 C — 「예외: 3건」 추적표</h2>
+  <div class="src">1부 프롤로그 → 1부 45화 → 2부 45화 → 3부 40화 → 3부 45화</div>
+
+  <h3>C-1. 시간순 인용</h3>
+  <div class="scroll">
+  <table>
+    <tr><th style="width:20%">출처</th><th style="width:80%">본문 인용</th></tr>
+    <tr><td class="k">1부 프롤로그</td><td class="mono">해당 개체 장기 추적 태그 부여. 흥미로움.</td></tr>
+    <tr><td class="k">1부 45화</td><td class="mono">개체 데이터: 보존. / 잔류 데이터: 폐기. / <span>예외 3건: 보존. 태그 유지.</span></td></tr>
+    <tr><td class="k">2부 45화</td><td class="mono">잔류 데이터: 폐기. / <span>예외: 3건. 보존. 이관.</span></td></tr>
+    <tr class="apart"><td class="k">3부 40화</td><td class="mono">지정 외 개체 — 회수. / 플래그: / 없음. 사유: 관찰 경로 중복. <span>예외 대상 아님.</span></td></tr>
+    <tr><td class="k">3부 45화</td><td class="mono"><span>예외: 3건. 보존. 이관.</span></td></tr>
+  </table>
+  </div>
+  <p class="note">※ 2부·3부 프롤로그에도 「해당 개체 장기 추적 태그 부여. 흥미로움.」이 축자 동일로 실려 있다(A-2 참조). 본 표는 같은 줄을 세 번 싣지 않는다.</p>
+
+  <h3>C-2. 표기 대조</h3>
+  <div class="scroll">
+  <table>
+    <tr><th style="width:16%">항목</th><th style="width:28%">1부 45화</th><th style="width:28%">2부 45화</th><th style="width:28%">3부 45화</th></tr>
+    <tr><td class="k">표기</td><td class="mono">예외 3건:</td><td class="mono">예외: 3건.</td><td class="mono">예외: 3건.</td></tr>
+    <tr><td class="k">처분</td><td class="mono">보존. 태그 유지.</td><td class="mono">보존. 이관.</td><td class="mono">보존. 이관.</td></tr>
+    <tr><td class="k">잔류 데이터</td><td class="mono">폐기.</td><td class="mono">폐기.</td><td class="k" style="text-align:center">—</td></tr>
+    <tr><td class="k">런 판정</td><td class="mono">실험 종료.</td><td class="mono">무효.</td><td class="mono">종료 판정 — 보류.</td></tr>
+    <tr><td class="k">로그의 마지막 줄</td><td class="mono">실험 #45891 — 시작.</td><td class="mono">실험 #45892 — 시작.</td><td class="mono">예외: 3건. 보존. 이관.</td></tr>
+  </table>
+  </div>
+  <p class="note">※ 본문 조판(1부 45화 · 2부 45화 · 3부 45화) — 1·2부의 이 줄은 붉게 강조되어 있고, 3부의 이 줄은 흐리게 낮춰져 있다. 본 표는 문자열만 옮기므로 그 차이가 실리지 않는다.</p>
+</section>
+
+<footer>
+  TAMPERED EDEN — APPENDIX<br>
+  A 세 프롤로그 대조표 · B 관찰 기록 번호 대조표 · C 「예외: 3건」 추적표
+</footer>
+
+</div>
+</body>
+</html>
